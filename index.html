@@ -15,6 +15,7 @@
         .btn { display: inline-block; padding: 10px 15px; margin: 5px 5px 0 0; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; text-align: center; color: white !important; }
         .btn-tel { background-color: #007bff; }
         .btn-wa { background-color: #25d366; }
+        .debug { background: #fff3cd; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px; overflow-x: auto; display: none; }
     </style>
 </head>
 <body>
@@ -28,17 +29,19 @@
 
     <div id="telefones"><p>Selecione um aluno para ver os contatos.</p></div>
 
+    <div id="debug" class="debug"></div>
+
     <script>
         // URL da sua planilha
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvElQdkqUGxgmvpMIWxBkWzm0gMgqsM2SZcAP53TYv6-ftDQ9Up3Bj6TZX5TysYBHvmYIU4u3Z_t7b/pub?gid=1202797417&single=true&output=csv';
         
-        // Ajuste das colunas (Índices: A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14)
-        const COL_TURMA = 0;
-        const COL_NOME = 1;
-        const COL_TEL1 = 2;  // Coluna C
-        const COL_TEL2 = 6;  // Coluna G
-        const COL_TEL3 = 10; // Coluna K
-        const COL_TEL4 = 14; // Coluna O
+        // Índices das colunas (A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15, Q=16)
+        const COL_TURMA = 0;    // Coluna A
+        const COL_NOME = 1;     // Coluna B
+        const COL_TEL1 = 5;     // Coluna F
+        const COL_TEL2 = 9;     // Coluna J
+        const COL_TEL3 = 13;    // Coluna N
+        const COL_TEL4 = 16;    // Coluna Q
         
         let dados = [];
 
@@ -49,14 +52,37 @@
                 const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
                 // .slice(1) remove a primeira linha (cabeçalho)
                 dados = result.data.slice(1); 
+                
+                // Debug para verificar os dados carregados
+                mostrarDebug();
+                
                 popularTurmas();
             } catch (err) {
                 document.getElementById('serie').innerHTML = '<option>Erro ao carregar dados</option>';
+                console.error('Erro ao carregar dados:', err);
+            }
+        }
+
+        function mostrarDebug() {
+            const debugDiv = document.getElementById('debug');
+            if (dados.length > 0) {
+                const primeiroAluno = dados[0];
+                debugDiv.style.display = 'block';
+                debugDiv.innerHTML = `
+                    <strong>📊 Debug - Primeiro aluno:</strong><br>
+                    Turma (coluna A): ${primeiroAluno[COL_TURMA] || '(vazio)'}<br>
+                    Nome (coluna B): ${primeiroAluno[COL_NOME] || '(vazio)'}<br>
+                    Telefone 1 (coluna F): ${primeiroAluno[COL_TEL1] || '(vazio)'}<br>
+                    Telefone 2 (coluna J): ${primeiroAluno[COL_TEL2] || '(vazio)'}<br>
+                    Telefone 3 (coluna N): ${primeiroAluno[COL_TEL3] || '(vazio)'}<br>
+                    Telefone 4 (coluna Q): ${primeiroAluno[COL_TEL4] || '(vazio)'}<br>
+                    <br><strong>Total de alunos carregados: ${dados.length}</strong>
+                `;
             }
         }
 
         function popularTurmas() {
-            const turmas = [...new Set(dados.map(row => row[COL_TURMA]).filter(v => v))];
+            const turmas = [...new Set(dados.map(row => row[COL_TURMA]).filter(v => v && v.trim() !== ''))];
             const select = document.getElementById('serie');
             select.innerHTML = '<option value="">Selecione a turma</option>';
             turmas.forEach(t => {
@@ -68,7 +94,11 @@
 
         document.getElementById('serie').addEventListener('change', function() {
             const selectAluno = document.getElementById('aluno');
-            const alunos = dados.filter(row => row[COL_TURMA] === this.value).map(row => row[COL_NOME]);
+            const alunos = dados
+                .filter(row => row[COL_TURMA] === this.value)
+                .map(row => row[COL_NOME])
+                .filter(v => v && v.trim() !== '');
+            
             selectAluno.innerHTML = '<option value="">Selecione um aluno</option>';
             alunos.forEach(nome => {
                 const opt = document.createElement('option');
@@ -78,43 +108,83 @@
             selectAluno.disabled = false;
         });
 
-        function criarBloco(tel, label) {
-            if (!tel || tel.trim() === '' || tel === '—') return '';
+        function formatarTelefone(tel) {
+            if (!tel || tel.trim() === '' || tel === '—') return null;
             
-            // Limpa o número removendo qualquer caractere não numérico
+            // Remove tudo que não é número
             let num = tel.replace(/\D/g, '');
             
-            // Remove o código 55 se já estiver presente e adiciona novamente para garantir
-            if (num.startsWith('55')) {
-                num = num.substring(2);
+            if (num.length === 0) return null;
+            
+            // Se o número não tem 55 no início, adiciona
+            if (!num.startsWith('55')) {
+                num = '55' + num;
             }
             
-            // Formata para o WhatsApp (inclui 55)
-            let waNum = '55' + num;
+            return num;
+        }
+
+        function criarBloco(tel, label) {
+            const numFormatado = formatarTelefone(tel);
+            if (!numFormatado) return '';
             
-            // Formata para ligação (sem 55 para números brasileiros)
-            let telNum = num;
+            // Número para WhatsApp (com 55)
+            const waNum = numFormatado;
+            
+            // Número para ligação (sem 55 para ligações locais)
+            const telNum = numFormatado.substring(2);
 
             return `
                 <div class="contato-bloco">
                     <strong>${label}:</strong> ${tel}<br>
-                    <a href="tel:${telNum}" class="btn btn-tel">Ligar</a>
-                    <a href="https://wa.me/${waNum}" target="_blank" class="btn btn-wa">WhatsApp</a>
+                    <a href="tel:${telNum}" class="btn btn-tel">📞 Ligar</a>
+                    <a href="https://wa.me/${waNum}" target="_blank" class="btn btn-wa">💬 WhatsApp</a>
                 </div>`;
         }
 
         document.getElementById('aluno').addEventListener('change', function() {
-            const aluno = dados.find(r => r[COL_NOME] === this.value && r[COL_TURMA] === document.getElementById('serie').value);
+            const alunoSelecionado = this.value;
+            const turmaSelecionada = document.getElementById('serie').value;
+            
+            if (!alunoSelecionado || !turmaSelecionada) {
+                document.getElementById('telefones').innerHTML = '<p>Selecione um aluno para ver os contatos.</p>';
+                return;
+            }
+            
+            // Encontra o aluno na turma selecionada
+            const aluno = dados.find(r => 
+                r[COL_NOME] === alunoSelecionado && 
+                r[COL_TURMA] === turmaSelecionada
+            );
+            
             const divTel = document.getElementById('telefones');
+            
             if (aluno) {
-                divTel.innerHTML = `<h3>${this.value}</h3>` + 
-                    criarBloco(aluno[COL_TEL1], "Contato 1") +
-                    criarBloco(aluno[COL_TEL2], "Contato 2") +
-                    criarBloco(aluno[COL_TEL3], "Contato 3") +
-                    criarBloco(aluno[COL_TEL4], "Contato 4");
+                const telefones = [
+                    { numero: aluno[COL_TEL1], label: '📱 Telefone 1' },
+                    { numero: aluno[COL_TEL2], label: '📱 Telefone 2' },
+                    { numero: aluno[COL_TEL3], label: '📱 Telefone 3' },
+                    { numero: aluno[COL_TEL4], label: '📱 Telefone 4' }
+                ];
+                
+                // Filtra apenas telefones válidos
+                const telefonesValidos = telefones.filter(t => t.numero && t.numero.trim() !== '' && t.numero !== '—');
+                
+                if (telefonesValidos.length === 0) {
+                    divTel.innerHTML = `<h3>${alunoSelecionado}</h3><p>Nenhum telefone cadastrado para este aluno.</p>`;
+                } else {
+                    let html = `<h3>${alunoSelecionado}</h3>`;
+                    telefonesValidos.forEach(t => {
+                        html += criarBloco(t.numero, t.label);
+                    });
+                    divTel.innerHTML = html;
+                }
+            } else {
+                divTel.innerHTML = '<p>Aluno não encontrado.</p>';
             }
         });
 
+        // Carregar os dados ao iniciar
         carregarDados();
     </script>
 </body>
