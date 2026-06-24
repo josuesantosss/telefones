@@ -84,16 +84,22 @@
             // Limpa o número removendo qualquer caractere não numérico
             let num = tel.replace(/\D/g, '');
             
-            // Adiciona o código 55 caso não tenha sido incluído
-            if (num.length === 10 || num.length === 11) {
-                num = '55' + num;
+            // Remove o código 55 se já estiver presente e adiciona novamente para garantir
+            if (num.startsWith('55')) {
+                num = num.substring(2);
             }
+            
+            // Formata para o WhatsApp (inclui 55)
+            let waNum = '55' + num;
+            
+            // Formata para ligação (sem 55 para números brasileiros)
+            let telNum = num;
 
             return `
                 <div class="contato-bloco">
                     <strong>${label}:</strong> ${tel}<br>
-                    <a href="tel:${num.replace('55', '')}" class="btn btn-tel">Ligar</a>
-                    <a href="https://wa.me/${num}" target="_blank" class="btn btn-wa">WhatsApp</a>
+                    <a href="tel:${telNum}" class="btn btn-tel">Ligar</a>
+                    <a href="https://wa.me/${waNum}" target="_blank" class="btn btn-wa">WhatsApp</a>
                 </div>`;
         }
 
