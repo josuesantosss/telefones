@@ -12,9 +12,9 @@
         select { width: 100%; padding: 10px; font-size: 16px; margin-top: 5px; }
         #telefones { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
         .contato-bloco { margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-        .btn { display: inline-block; padding: 10px 15px; margin: 5px 5px 0 0; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; text-align: center; }
-        .btn-tel { background-color: #007bff; color: white; }
-        .btn-wa { background-color: #25d366; color: white; }
+        .btn { display: inline-block; padding: 10px 15px; margin: 5px 5px 0 0; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; text-align: center; color: white !important; }
+        .btn-tel { background-color: #007bff; }
+        .btn-wa { background-color: #25d366; }
     </style>
 </head>
 <body>
@@ -29,9 +29,17 @@
     <div id="telefones"><p>Selecione um aluno para ver os contatos.</p></div>
 
     <script>
+        // URL da sua planilha
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvElQdkqUGxgmvpMIWxBkWzm0gMgqsM2SZcAP53TYv6-ftDQ9Up3Bj6TZX5TysYBHvmYIU4u3Z_t7b/pub?gid=1202797417&single=true&output=csv';
-        // Ajustado para colunas C(2), G(6), K(10), O(14)
-        const COL_TURMA = 0, COL_NOME = 1, COL_TEL1 = 2, COL_TEL2 = 6, COL_TEL3 = 10, COL_TEL4 = 14;
+        
+        // Ajuste das colunas (Índices: A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14)
+        const COL_TURMA = 0;
+        const COL_NOME = 1;
+        const COL_TEL1 = 2;  // Coluna C
+        const COL_TEL2 = 6;  // Coluna G
+        const COL_TEL3 = 10; // Coluna K
+        const COL_TEL4 = 14; // Coluna O
+        
         let dados = [];
 
         async function carregarDados() {
@@ -39,9 +47,12 @@
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
                 const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
-                dados = result.data.slice(1); // Ignora o cabeçalho
+                // .slice(1) remove a primeira linha (cabeçalho)
+                dados = result.data.slice(1); 
                 popularTurmas();
-            } catch (err) { document.getElementById('serie').innerHTML = '<option>Erro ao carregar dados</option>'; }
+            } catch (err) {
+                document.getElementById('serie').innerHTML = '<option>Erro ao carregar dados</option>';
+            }
         }
 
         function popularTurmas() {
@@ -69,12 +80,20 @@
 
         function criarBloco(tel, label) {
             if (!tel || tel.trim() === '' || tel === '—') return '';
-            const num = tel.replace(/\D/g, '');
+            
+            // Limpa o número removendo qualquer caractere não numérico
+            let num = tel.replace(/\D/g, '');
+            
+            // Adiciona o código 55 caso não tenha sido incluído
+            if (num.length === 10 || num.length === 11) {
+                num = '55' + num;
+            }
+
             return `
                 <div class="contato-bloco">
-                    <strong>${label}: ${tel}</strong><br>
-                    <a href="tel:${num}" class="btn btn-tel">Ligar</a>
-                    <a href="https://wa.me/55${num}" target="_blank" class="btn btn-wa">WhatsApp</a>
+                    <strong>${label}:</strong> ${tel}<br>
+                    <a href="tel:${num.replace('55', '')}" class="btn btn-tel">Ligar</a>
+                    <a href="https://wa.me/${num}" target="_blank" class="btn btn-wa">WhatsApp</a>
                 </div>`;
         }
 
