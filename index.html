@@ -11,7 +11,9 @@
         label { display: block; margin-top: 15px; font-weight: bold; }
         select, button { width: 100%; padding: 10px; font-size: 16px; margin-top: 5px; }
         #telefones { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
-        .telefone-item { padding: 5px 0; }
+        .telefone-item { padding: 5px 0; font-size: 16px; }
+        .telefone-item a { color: #007bff; text-decoration: none; font-weight: bold; }
+        .telefone-item a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -98,6 +100,16 @@
             divTel.innerHTML = '<p>Selecione um aluno para ver os telefones.</p>';
         });
 
+        // Função auxiliar para criar o link de telefone se ele existir
+        function formatarLinkTelefone(tel) {
+            if (!tel || tel.trim() === '' || tel === '—') {
+                return '—';
+            }
+            // Remove parênteses, espaços e hifens para o link de discagem puro (ex: tel:11999999999)
+            const numeroPuro = tel.replace(/\D/g, '');
+            return `<a href="tel:${numeroPuro}">${tel}</a>`;
+        }
+
         document.getElementById('aluno').addEventListener('change', function() {
             const nomeAluno = this.value;
             const divTel = document.getElementById('telefones');
@@ -114,10 +126,10 @@
                 return;
             }
 
-            const tel1 = aluno[COL_TEL1] || '—';
-            const tel2 = aluno[COL_TEL2] || '—';
-            const tel3 = aluno[COL_TEL3] || '—';
-            const tel4 = aluno[COL_TEL4] || '—';
+            const tel1 = formatarLinkTelefone(aluno[COL_TEL1]);
+            const tel2 = formatarLinkTelefone(aluno[COL_TEL2]);
+            const tel3 = formatarLinkTelefone(aluno[COL_TEL3]);
+            const tel4 = formatarLinkTelefone(aluno[COL_TEL4]);
 
             divTel.innerHTML = `
                 <h3>${nomeAluno}</h3>
