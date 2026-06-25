@@ -1,191 +1,422 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscar Contato de Aluno</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscar Telefone de Aluno</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; max-width: 400px; margin: 20px auto; padding: 0 10px; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        select { width: 100%; padding: 10px; font-size: 16px; margin-top: 5px; }
-        #telefones { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
-        .contato-bloco { margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
-        .btn { display: inline-block; padding: 10px 15px; margin: 5px 5px 0 0; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; text-align: center; color: white !important; }
-        .btn-tel { background-color: #007bff; }
-        .btn-wa { background-color: #25d366; }
-        .debug { background: #fff3cd; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px; overflow-x: auto; display: none; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        h2 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: "📞";
+            font-size: 28px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+        }
+        select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
+            background-color: white;
+        }
+        select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        #telefones {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 2px dashed #e2e8f0;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+        #telefones.has-data {
+            border-style: solid;
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+        .telefone-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .telefone-item:last-child {
+            border-bottom: none;
+        }
+        .telefone-item strong {
+            color: #2d3748;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        .telefone-item .numero {
+            font-weight: 500;
+            color: #2d3748;
+            margin-right: 10px;
+        }
+        .telefone-item .links {
+            display: flex;
+            gap: 8px;
+        }
+        .telefone-item .links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .telefone-item .links a.link-tel {
+            color: #3182ce;
+            background: #ebf8ff;
+        }
+        .telefone-item .links a.link-tel:hover {
+            background: #3182ce;
+            color: white;
+        }
+        .telefone-item .links a.link-wa {
+            color: #25D366;
+            background: #ebf8ff;
+        }
+        .telefone-item .links a.link-wa:hover {
+            background: #25D366;
+            color: white;
+        }
+        .telefone-item .sem-telefone {
+            color: #a0aec0;
+            font-style: italic;
+        }
+        .aluno-nome {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4299e1;
+        }
+        .placeholder {
+            color: #a0aec0;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 15px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #4299e1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            color: #e53e3e;
+            background: #fff5f5;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
+        }
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            h2 { font-size: 22px; }
+            .telefone-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+        }
     </style>
 </head>
 <body>
-    <h2>Buscar Contato do Aluno</h2>
+    <div class="container">
+        <h2>Buscar Telefone</h2>
 
-    <label for="serie">Turma:</label>
-    <select id="serie"><option value="">Carregando...</option></select>
+        <div class="form-group">
+            <label for="serie">Turma</label>
+            <select id="serie">
+                <option value="">Carregando turmas...</option>
+            </select>
+        </div>
 
-    <label for="aluno">Aluno:</label>
-    <select id="aluno" disabled><option value="">Selecione uma turma primeiro</option></select>
+        <div class="form-group">
+            <label for="aluno">Aluno</label>
+            <select id="aluno" disabled>
+                <option value="">Selecione uma turma primeiro</option>
+            </select>
+        </div>
 
-    <div id="telefones"><p>Selecione um aluno para ver os contatos.</p></div>
-
-    <div id="debug" class="debug"></div>
+        <div id="telefones">
+            <div class="placeholder">👤 Selecione um aluno para ver os telefones</div>
+        </div>
+    </div>
 
     <script>
-        // URL da sua planilha
+        // === CONFIGURAÇÕES ===
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvElQdkqUGxgmvpMIWxBkWzm0gMgqsM2SZcAP53TYv6-ftDQ9Up3Bj6TZX5TysYBHvmYIU4u3Z_t7b/pub?gid=1202797417&single=true&output=csv';
-        
-        // Índices das colunas (A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, M=12, N=13, O=14, P=15, Q=16)
-        const COL_TURMA = 0;    // Coluna A
-        const COL_NOME = 1;     // Coluna B
-        const COL_TEL1 = 5;     // Coluna F
-        const COL_TEL2 = 9;     // Coluna J
-        const COL_TEL3 = 13;    // Coluna N
-        const COL_TEL4 = 16;    // Coluna Q
-        
-        let dados = [];
+        const COL_TURMA = 0;
+        const COL_NOME = 1;
+        const COL_PAR1 = 2;    // C
+        const COL_TEL1 = 5;    // F
+        const COL_PAR2 = 6;    // G
+        const COL_TEL2 = 9;    // J
+        const COL_PAR3 = 10;   // K
+        const COL_TEL3 = 13;   // N
+        const COL_PAR4 = 14;   // O
+        const COL_TEL4 = 16;   // Q
 
-        async function carregarDados() {
-            try {
-                const response = await fetch(CSV_URL);
-                const csvText = await response.text();
-                const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
-                // .slice(1) remove a primeira linha (cabeçalho)
-                dados = result.data.slice(1); 
-                
-                // Debug para verificar os dados carregados
-                mostrarDebug();
-                
-                popularTurmas();
-            } catch (err) {
-                document.getElementById('serie').innerHTML = '<option>Erro ao carregar dados</option>';
-                console.error('Erro ao carregar dados:', err);
-            }
+        let dados = [];
+        let dadosCarregados = false;
+
+        // ========== FUNÇÕES AUXILIARES ==========
+        function extrairNumeroPuro(tel) {
+            if (!tel || tel.trim() === '' || tel === '—' || tel === '–') return null;
+            const puro = tel.replace(/\D/g, '');
+            if (puro.length < 8) return null;
+            return puro;
         }
 
-        function mostrarDebug() {
-            const debugDiv = document.getElementById('debug');
-            if (dados.length > 0) {
-                const primeiroAluno = dados[0];
-                debugDiv.style.display = 'block';
-                debugDiv.innerHTML = `
-                    <strong>📊 Debug - Primeiro aluno:</strong><br>
-                    Turma (coluna A): ${primeiroAluno[COL_TURMA] || '(vazio)'}<br>
-                    Nome (coluna B): ${primeiroAluno[COL_NOME] || '(vazio)'}<br>
-                    Telefone 1 (coluna F): ${primeiroAluno[COL_TEL1] || '(vazio)'}<br>
-                    Telefone 2 (coluna J): ${primeiroAluno[COL_TEL2] || '(vazio)'}<br>
-                    Telefone 3 (coluna N): ${primeiroAluno[COL_TEL3] || '(vazio)'}<br>
-                    Telefone 4 (coluna Q): ${primeiroAluno[COL_TEL4] || '(vazio)'}<br>
-                    <br><strong>Total de alunos carregados: ${dados.length}</strong>
-                `;
+        function gerarLinkWhatsApp(numero) {
+            const puro = extrairNumeroPuro(numero);
+            if (!puro) return null;
+            const mensagem = "Olá, aqui é da escola Aureliano!";
+            return `https://wa.me/55${puro}?text=${encodeURIComponent(mensagem)}`;
+        }
+
+        function gerarLinkTelefone(numero) {
+            const puro = extrairNumeroPuro(numero);
+            if (!puro) return null;
+            return `tel:${puro}`;
+        }
+
+        function formatarLinks(numero) {
+            const puro = extrairNumeroPuro(numero);
+            if (!puro) {
+                return `<span class="sem-telefone">—</span>`;
+            }
+
+            const linkTel = gerarLinkTelefone(numero);
+            const linkWa = gerarLinkWhatsApp(numero);
+
+            let html = `<span class="numero">${numero}</span>`;
+            html += `<div class="links">`;
+            if (linkTel) {
+                html += `<a href="${linkTel}" class="link-tel" title="Ligar">📞 Ligar</a>`;
+            }
+            if (linkWa) {
+                html += `<a href="${linkWa}" target="_blank" class="link-wa" title="WhatsApp">💬 WhatsApp</a>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        // ========== CARREGAMENTO DOS DADOS ==========
+        async function carregarDados() {
+            const selectSerie = document.getElementById('serie');
+            const divTelefones = document.getElementById('telefones');
+
+            try {
+                selectSerie.innerHTML = '<option value="">⏳ Carregando...</option>';
+                divTelefones.innerHTML = '<div class="placeholder"><span class="loading"></span> Carregando dados...</div>';
+
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error('Erro ao acessar a planilha');
+                const csvText = await response.text();
+                const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
+
+                if (result.errors.length > 0) {
+                    console.warn('Erros no parsing:', result.errors);
+                }
+
+                dados = result.data.filter(row => row.length > 0 && row[COL_NOME]?.trim());
+                dadosCarregados = true;
+
+                if (dados.length === 0) {
+                    throw new Error('Nenhum dado encontrado na planilha');
+                }
+
+                popularTurmas();
+                divTelefones.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+
+            } catch (err) {
+                console.error('Erro ao carregar dados:', err);
+                selectSerie.innerHTML = '<option value="">❌ Erro ao carregar</option>';
+                divTelefones.innerHTML = `<div class="error">❌ ${err.message || 'Erro ao carregar dados. Tente novamente mais tarde.'}</div>`;
             }
         }
 
         function popularTurmas() {
-            const turmas = [...new Set(dados.map(row => row[COL_TURMA]).filter(v => v && v.trim() !== ''))];
+            const turmas = [...new Set(dados.map(row => row[COL_TURMA]?.trim()).filter(v => v))].sort();
             const select = document.getElementById('serie');
-            select.innerHTML = '<option value="">Selecione a turma</option>';
+            select.innerHTML = '<option value="">📚 Selecione a turma</option>';
             turmas.forEach(t => {
                 const opt = document.createElement('option');
-                opt.value = t; opt.textContent = t;
+                opt.value = t;
+                opt.textContent = t;
                 select.appendChild(opt);
             });
+            document.getElementById('aluno').disabled = true;
         }
 
+        // ========== EVENTOS ==========
         document.getElementById('serie').addEventListener('change', function() {
+            const turmaSelecionada = this.value;
             const selectAluno = document.getElementById('aluno');
+            const divTel = document.getElementById('telefones');
+
+            if (!turmaSelecionada) {
+                selectAluno.innerHTML = '<option value="">Selecione uma turma primeiro</option>';
+                selectAluno.disabled = true;
+                divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+                divTel.classList.remove('has-data');
+                return;
+            }
+
             const alunos = dados
-                .filter(row => row[COL_TURMA] === this.value)
-                .map(row => row[COL_NOME])
-                .filter(v => v && v.trim() !== '');
-            
-            selectAluno.innerHTML = '<option value="">Selecione um aluno</option>';
+                .filter(row => row[COL_TURMA]?.trim() === turmaSelecionada)
+                .map(row => row[COL_NOME]?.trim())
+                .filter(v => v)
+                .sort();
+
+            selectAluno.innerHTML = '<option value="">👤 Selecione um aluno</option>';
             alunos.forEach(nome => {
                 const opt = document.createElement('option');
-                opt.value = nome; opt.textContent = nome;
+                opt.value = nome;
+                opt.textContent = nome;
                 selectAluno.appendChild(opt);
             });
             selectAluno.disabled = false;
+            divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+            divTel.classList.remove('has-data');
         });
-
-        function formatarTelefone(tel) {
-            if (!tel || tel.trim() === '' || tel === '—') return null;
-            
-            // Remove tudo que não é número
-            let num = tel.replace(/\D/g, '');
-            
-            if (num.length === 0) return null;
-            
-            // Se o número não tem 55 no início, adiciona
-            if (!num.startsWith('55')) {
-                num = '55' + num;
-            }
-            
-            return num;
-        }
-
-        function criarBloco(tel, label) {
-            const numFormatado = formatarTelefone(tel);
-            if (!numFormatado) return '';
-            
-            // Número para WhatsApp (com 55)
-            const waNum = numFormatado;
-            
-            // Número para ligação (sem 55 para ligações locais)
-            const telNum = numFormatado.substring(2);
-
-            return `
-                <div class="contato-bloco">
-                    <strong>${label}:</strong> ${tel}<br>
-                    <a href="tel:${telNum}" class="btn btn-tel">📞 Ligar</a>
-                    <a href="https://wa.me/${waNum}" target="_blank" class="btn btn-wa">💬 WhatsApp</a>
-                </div>`;
-        }
 
         document.getElementById('aluno').addEventListener('change', function() {
-            const alunoSelecionado = this.value;
-            const turmaSelecionada = document.getElementById('serie').value;
-            
-            if (!alunoSelecionado || !turmaSelecionada) {
-                document.getElementById('telefones').innerHTML = '<p>Selecione um aluno para ver os contatos.</p>';
+            const nomeAluno = this.value;
+            const divTel = document.getElementById('telefones');
+
+            if (!nomeAluno) {
+                divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+                divTel.classList.remove('has-data');
                 return;
             }
-            
-            // Encontra o aluno na turma selecionada
-            const aluno = dados.find(r => 
-                r[COL_NOME] === alunoSelecionado && 
-                r[COL_TURMA] === turmaSelecionada
+
+            const turma = document.getElementById('serie').value;
+            const aluno = dados.find(row =>
+                row[COL_NOME]?.trim() === nomeAluno &&
+                row[COL_TURMA]?.trim() === turma
             );
-            
-            const divTel = document.getElementById('telefones');
-            
-            if (aluno) {
-                const telefones = [
-                    { numero: aluno[COL_TEL1], label: '📱 Telefone 1' },
-                    { numero: aluno[COL_TEL2], label: '📱 Telefone 2' },
-                    { numero: aluno[COL_TEL3], label: '📱 Telefone 3' },
-                    { numero: aluno[COL_TEL4], label: '📱 Telefone 4' }
-                ];
-                
-                // Filtra apenas telefones válidos
-                const telefonesValidos = telefones.filter(t => t.numero && t.numero.trim() !== '' && t.numero !== '—');
-                
-                if (telefonesValidos.length === 0) {
-                    divTel.innerHTML = `<h3>${alunoSelecionado}</h3><p>Nenhum telefone cadastrado para este aluno.</p>`;
-                } else {
-                    let html = `<h3>${alunoSelecionado}</h3>`;
-                    telefonesValidos.forEach(t => {
-                        html += criarBloco(t.numero, t.label);
-                    });
-                    divTel.innerHTML = html;
-                }
-            } else {
-                divTel.innerHTML = '<p>Aluno não encontrado.</p>';
+
+            if (!aluno) {
+                divTel.innerHTML = '<div class="error">❌ Aluno não encontrado. Tente novamente.</div>';
+                divTel.classList.remove('has-data');
+                return;
             }
+
+            // Monta lista com todos os 4 contatos
+            const contatos = [
+                { label: 'Telefone 1', tel: aluno[COL_TEL1], parentesco: aluno[COL_PAR1] },
+                { label: 'Telefone 2', tel: aluno[COL_TEL2], parentesco: aluno[COL_PAR2] },
+                { label: 'Telefone 3', tel: aluno[COL_TEL3], parentesco: aluno[COL_PAR3] },
+                { label: 'Telefone 4', tel: aluno[COL_TEL4], parentesco: aluno[COL_PAR4] }
+            ];
+
+            let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
+            let temAlgumTelefone = false;
+
+            contatos.forEach(info => {
+                const linksHtml = formatarLinks(info.tel);
+                // Verifica se o telefone é válido (não é o span de "—")
+                if (!linksHtml.includes('sem-telefone')) {
+                    temAlgumTelefone = true;
+                }
+                let label = info.label;
+                if (info.parentesco && info.parentesco.trim() !== '') {
+                    label += ` (${info.parentesco.trim()})`;
+                }
+                html += `<div class="telefone-item"><strong>${label}</strong> ${linksHtml}</div>`;
+            });
+
+            if (!temAlgumTelefone) {
+                html += '<div class="placeholder" style="margin-top:10px;">📭 Nenhum telefone cadastrado para este aluno</div>';
+            }
+
+            divTel.innerHTML = html;
+            divTel.classList.add('has-data');
         });
 
-        // Carregar os dados ao iniciar
+        // Inicialização
         carregarDados();
+
+        // Recarregar com Cmd/Ctrl + R (opcional)
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
+                if (confirm('Recarregar os dados da planilha?')) {
+                    carregarDados();
+                }
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
