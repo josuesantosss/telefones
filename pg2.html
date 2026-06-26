@@ -3,171 +3,58 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Buscar Telefone de Aluno</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <title>Adicionar Telefone de Aluno</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            display: flex; justify-content: center; align-items: center; padding: 20px;
         }
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            padding: 30px;
-            max-width: 500px;
-            width: 100%;
-            transition: all 0.3s ease;
+            background: white; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15); padding: 30px; max-width: 500px; width: 100%;
         }
         h2 {
-            color: #2d3748;
-            margin-bottom: 25px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            color: #2d3748; margin-bottom: 25px; font-weight: 600;
+            display: flex; align-items: center; gap: 10px;
         }
-        h2::before {
-            content: "📞";
-            font-size: 28px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
+        h2::before { content: "📞"; font-size: 28px; }
+        .form-group { margin-bottom: 20px; }
         label {
-            display: block;
-            font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 6px;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            display: block; font-weight: 600; color: #4a5568; margin-bottom: 6px;
+            font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        input, select {
+            width: 100%; padding: 12px 15px; font-size: 16px;
+            border: 2px solid #e2e8f0; border-radius: 12px; background: #f7fafc;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            outline: none; border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66,153,225,0.2); background: white;
         }
         select {
-            width: 100%;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            background: #f7fafc;
-            transition: all 0.3s ease;
             cursor: pointer;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
+            background-repeat: no-repeat; background-position: right 15px center;
         }
-        select:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
-            background-color: white;
+        button {
+            width: 100%; padding: 14px; font-size: 18px; font-weight: 700;
+            background: #4299e1; color: white; border: none; border-radius: 12px;
+            cursor: pointer; transition: background 0.3s ease;
         }
-        select:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        button:hover { background: #3182ce; }
+        button:disabled { background: #a0aec0; cursor: not-allowed; }
+        .feedback {
+            margin-top: 20px; padding: 15px; border-radius: 12px;
+            font-weight: 600; text-align: center;
         }
-        #telefones {
-            margin-top: 25px;
-            padding: 20px;
-            background: #f7fafc;
-            border-radius: 12px;
-            border: 2px dashed #e2e8f0;
-            min-height: 100px;
-            transition: all 0.3s ease;
-        }
-        #telefones.has-data {
-            border-style: solid;
-            border-color: #4299e1;
-            background: #ebf8ff;
-        }
-        .telefone-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .telefone-item:last-child {
-            border-bottom: none;
-        }
-        .telefone-item strong {
-            color: #2d3748;
-            font-weight: 600;
-        }
-        .telefone-item a {
-            color: #4299e1;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 6px;
-            background: #ebf8ff;
-            transition: all 0.2s ease;
-        }
-        .telefone-item a:hover {
-            background: #4299e1;
-            color: white;
-            text-decoration: none;
-            transform: scale(1.05);
-        }
-        .telefone-item .sem-telefone {
-            color: #a0aec0;
-            font-style: italic;
-        }
-        .aluno-nome {
-            font-size: 20px;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #4299e1;
-        }
-        .placeholder {
-            color: #a0aec0;
-            text-align: center;
-            padding: 20px 0;
-            font-size: 15px;
-        }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #e2e8f0;
-            border-top-color: #4299e1;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .error {
-            color: #e53e3e;
-            background: #fff5f5;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid #e53e3e;
-        }
-        .success {
-            color: #38a169;
-            background: #f0fff4;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border-left: 4px solid #38a169;
-            font-size: 14px;
-            margin-top: 10px;
-        }
+        .success { background: #f0fff4; color: #276749; border-left: 4px solid #48bb78; }
+        .error { background: #fff5f5; color: #c53030; border-left: 4px solid #fc8181; }
+        .info { background: #ebf8ff; color: #2b6cb0; border-left: 4px solid #63b3ed; }
         @media (max-width: 480px) {
             .container { padding: 20px; }
             h2 { font-size: 22px; }
@@ -176,188 +63,136 @@
 </head>
 <body>
     <div class="container">
-        <h2>Buscar Telefone</h2>
+        <h2>Adicionar Telefone</h2>
 
         <div class="form-group">
-            <label for="serie">Turma</label>
-            <select id="serie">
-                <option value="">Carregando turmas...</option>
+            <label for="nome">Nome completo do aluno</label>
+            <input type="text" id="nome" placeholder="Digite o nome do aluno" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+            <label for="parentesco">Parentesco</label>
+            <select id="parentesco">
+                <option value="">Selecione...</option>
+                <option>Pai</option>
+                <option>Mãe</option>
+                <option>Padrasto</option>
+                <option>Madrasta</option>
+                <option>Avó(ô)</option>
+                <option>Bisavó(ô)</option>
+                <option>Irmã(o)</option>
+                <option>Responsável</option>
+                <option>Vizinha(a)</option>
+                <option>Trabalho</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="aluno">Aluno</label>
-            <select id="aluno" disabled>
-                <option value="">Selecione uma turma primeiro</option>
-            </select>
+            <label for="telefone">Telefone (com DDD, apenas números)</label>
+            <input type="tel" id="telefone" placeholder="Ex: 11999999999" maxlength="11" />
         </div>
 
-        <div id="telefones">
-            <div class="placeholder">👤 Selecione um aluno para ver os telefones</div>
-        </div>
+        <button id="btnEnviar" onclick="enviarDados()">➕ Adicionar Telefone</button>
+
+        <div id="feedback" class="feedback info">Preencha os campos e clique em Adicionar.</div>
     </div>
 
     <script>
-        // === CONFIGURAÇÕES ===
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvElQdkqUGxgmvpMIWxBkWzm0gMgqsM2SZcAP53TYv6-ftDQ9Up3Bj6TZX5TysYBHvmYIU4u3Z_t7b/pub?gid=1202797417&single=true&output=csv';
-        const COL_TURMA = 0;
-        const COL_NOME = 1;
-        const COL_TEL1 = 5;
-        const COL_TEL2 = 9;
-        const COL_TEL3 = 13;
-        const COL_TEL4 = 16;
+        // === CONFIGURAÇÃO: substitua pela URL do seu Google Apps Script ===
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec';
 
-        let dados = [];
-        let dadosCarregados = false;
+        // === TRANSFORMAÇÃO DO NOME ===
+        function normalizarNome(nome) {
+            // 1. Remove acentos: troca caracteres acentuados por suas versões sem acento
+            //    e já converte para maiúsculas.
+            const comAcento = 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ';
+            const semAcento = 'AAAAAEEEEIIIIOOOOOUUUUCN';
+            let resultado = '';
+            for (let i = 0; i < nome.length; i++) {
+                let char = nome[i].toUpperCase();
+                const idx = comAcento.indexOf(char);
+                if (idx !== -1) {
+                    resultado += semAcento[idx];
+                } else {
+                    resultado += char;
+                }
+            }
+            // 2. Troca Ç por C (já tratado acima, mas garantia)
+            resultado = resultado.replace(/Ç/g, 'C');
+            // 3. Remove caracteres não alfabéticos (opcional, mantém espaços e letras)
+            resultado = resultado.replace(/[^A-Z0-9\s]/g, '');
+            return resultado;
+        }
 
-        async function carregarDados() {
-            const selectSerie = document.getElementById('serie');
-            const divTelefones = document.getElementById('telefones');
+        document.getElementById('nome').addEventListener('input', function() {
+            // Aplica a normalização a cada tecla
+            this.value = normalizarNome(this.value);
+        });
+
+        // === VALIDAÇÃO DO TELEFONE ===
+        document.getElementById('telefone').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 11);
+        });
+
+        // === ENVIO PARA O GOOGLE APPS SCRIPT ===
+        async function enviarDados() {
+            const nome = document.getElementById('nome').value.trim();
+            const parentesco = document.getElementById('parentesco').value;
+            const telefone = document.getElementById('telefone').value.trim();
+
+            const feedback = document.getElementById('feedback');
+
+            // Validações
+            if (!nome) {
+                feedback.className = 'feedback error';
+                feedback.textContent = '❌ Preencha o nome do aluno.';
+                return;
+            }
+            if (!parentesco) {
+                feedback.className = 'feedback error';
+                feedback.textContent = '❌ Selecione o parentesco.';
+                return;
+            }
+            if (!telefone || telefone.length < 10) {
+                feedback.className = 'feedback error';
+                feedback.textContent = '❌ Informe um telefone válido com DDD (mínimo 10 dígitos).';
+                return;
+            }
+
+            const btn = document.getElementById('btnEnviar');
+            btn.disabled = true;
+            btn.textContent = '⏳ Enviando...';
+            feedback.className = 'feedback info';
+            feedback.textContent = 'Enviando dados...';
 
             try {
-                selectSerie.innerHTML = '<option value="">⏳ Carregando...</option>';
-                divTelefones.innerHTML = '<div class="placeholder"><span class="loading"></span> Carregando dados...</div>';
-
-                const response = await fetch(CSV_URL);
-                if (!response.ok) throw new Error('Erro ao acessar a planilha');
-                const csvText = await response.text();
-                const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
-
-                if (result.errors.length > 0) {
-                    console.warn('Erros no parsing:', result.errors);
-                }
-
-                dados = result.data.filter(row => row.length > 0 && row[COL_NOME]?.trim());
-                dadosCarregados = true;
-
-                if (dados.length === 0) {
-                    throw new Error('Nenhum dado encontrado na planilha');
-                }
-
-                popularTurmas();
-                divTelefones.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
-
-            } catch (err) {
-                console.error('Erro ao carregar dados:', err);
-                selectSerie.innerHTML = '<option value="">❌ Erro ao carregar</option>';
-                divTelefones.innerHTML = `<div class="error">❌ ${err.message || 'Erro ao carregar dados. Tente novamente mais tarde.'}</div>`;
-            }
-        }
-
-        function popularTurmas() {
-            const turmas = [...new Set(dados.map(row => row[COL_TURMA]?.trim()).filter(v => v))].sort();
-            const select = document.getElementById('serie');
-            select.innerHTML = '<option value="">📚 Selecione a turma</option>';
-            turmas.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t;
-                opt.textContent = t;
-                select.appendChild(opt);
-            });
-            document.getElementById('aluno').disabled = true;
-        }
-
-        document.getElementById('serie').addEventListener('change', function() {
-            const turmaSelecionada = this.value;
-            const selectAluno = document.getElementById('aluno');
-            const divTel = document.getElementById('telefones');
-
-            if (!turmaSelecionada) {
-                selectAluno.innerHTML = '<option value="">Selecione uma turma primeiro</option>';
-                selectAluno.disabled = true;
-                divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
-                divTel.classList.remove('has-data');
-                return;
-            }
-
-            const alunos = dados
-                .filter(row => row[COL_TURMA]?.trim() === turmaSelecionada)
-                .map(row => row[COL_NOME]?.trim())
-                .filter(v => v)
-                .sort();
-
-            selectAluno.innerHTML = '<option value="">👤 Selecione um aluno</option>';
-            alunos.forEach(nome => {
-                const opt = document.createElement('option');
-                opt.value = nome;
-                opt.textContent = nome;
-                selectAluno.appendChild(opt);
-            });
-            selectAluno.disabled = false;
-            divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
-            divTel.classList.remove('has-data');
-        });
-
-        function formatarLinkTelefone(tel) {
-            if (!tel || tel.trim() === '' || tel === '—' || tel === '–') {
-                return '<span class="sem-telefone">—</span>';
-            }
-            const numeroPuro = tel.replace(/\D/g, '');
-            if (numeroPuro.length < 8) {
-                return `<span class="sem-telefone">${tel}</span>`;
-            }
-            return `<a href="tel:${numeroPuro}" title="Clique para ligar">${tel} 📞</a>`;
-        }
-
-        document.getElementById('aluno').addEventListener('change', function() {
-            const nomeAluno = this.value;
-            const divTel = document.getElementById('telefones');
-
-            if (!nomeAluno) {
-                divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
-                divTel.classList.remove('has-data');
-                return;
-            }
-
-            const turma = document.getElementById('serie').value;
-            const aluno = dados.find(row => 
-                row[COL_NOME]?.trim() === nomeAluno && 
-                row[COL_TURMA]?.trim() === turma
-            );
-
-            if (!aluno) {
-                divTel.innerHTML = '<div class="error">❌ Aluno não encontrado. Tente novamente.</div>';
-                divTel.classList.remove('has-data');
-                return;
-            }
-
-            const tel1 = formatarLinkTelefone(aluno[COL_TEL1]);
-            const tel2 = formatarLinkTelefone(aluno[COL_TEL2]);
-            const tel3 = formatarLinkTelefone(aluno[COL_TEL3]);
-            const tel4 = formatarLinkTelefone(aluno[COL_TEL4]);
-
-            const telefones = [
-                { label: 'Telefone 1', value: tel1 },
-                { label: 'Telefone 2', value: tel2 },
-                { label: 'Telefone 3', value: tel3 },
-                { label: 'Telefone 4', value: tel4 }
-            ].filter(t => t.value !== '<span class="sem-telefone">—</span>');
-
-            let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
-            if (telefones.length === 0) {
-                html += '<div class="placeholder">📭 Nenhum telefone cadastrado para este aluno</div>';
-            } else {
-                telefones.forEach(t => {
-                    html += `<div class="telefone-item"><strong>${t.label}</strong> ${t.value}</div>`;
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necessário para web apps do Google
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: nome,
+                        parentesco: parentesco,
+                        telefone: telefone
+                    })
                 });
+
+                // Com no-cors, não conseguimos ler a resposta. 
+                // Assumimos sucesso se não houve exceção.
+                feedback.className = 'feedback success';
+                feedback.textContent = '✅ Telefone adicionado com sucesso! (verifique a planilha)';
+                document.getElementById('nome').value = '';
+                document.getElementById('parentesco').value = '';
+                document.getElementById('telefone').value = '';
+            } catch (error) {
+                console.error('Erro ao enviar:', error);
+                feedback.className = 'feedback error';
+                feedback.textContent = '❌ Erro ao enviar. Verifique o console e a URL do script.';
             }
 
-            divTel.innerHTML = html;
-            divTel.classList.add('has-data');
-        });
-
-        // Inicialização
-        carregarDados();
-
-        // Recarregar com Cmd/Ctrl + R (opcional)
-        document.addEventListener('keydown', (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
-                if (confirm('Recarregar os dados da planilha?')) {
-                    carregarDados();
-                }
-                e.preventDefault();
-            }
-        });
+            btn.disabled = false;
+            btn.textContent = '➕ Adicionar Telefone';
+        }
     </script>
 </body>
 </html>
