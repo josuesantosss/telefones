@@ -1,9 +1,27 @@
+EU PRECISO DE UMA PAGINA HTML como o modelo abaixo, mas oara adicionar novos telefones na planilha google através de um site dentro do github. 
+
+essa é a google planilha: https://docs.google.com/spreadsheets/d/11UBrGqr1hXDQ6XcXVl5xQVsX5AIWGka7Lp8sbykRvDQ/edit?gid=0#gid=0
+
+a planilha é para até 4 telefones contendo (a partir da coluna S), Parentesco 1, DDD1, TELEFONE 1, assim até o número 4
+
+COLOQUE UM DROPDOWN PARA ADICIONAR NO PARENTESCO COM AS OPÇÕES Pai, Mãe, Padrasto, Madrasta, Avó(ô), Bisavó(ô), Irmã(o), Responsável, Vizinha(a), Trabalho.
+
+precisa ter um campo para digitar o ddd e outro para digitar o telefone
+
+precisa ter um dropdown para selecionar a turma em que o telefone será inserido, que será o nome da aba, do 1 ao 5, com as letras A,B,C,D,E menos o 4º ano até a letra E
+
+precisa ter um campo para digitar o nome completo do aluno e ao digitar todas as letras tem que estar em maiusculo, trocar os acentos pela vogal digitada mas sem assento, trocar Ç por C.
+
+Esse código deve adicionar os dados na google planilha, na aba escolhida no dropdrow
+
+esse é o modelo da página
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Adicionar Telefones de Aluno</title>
+    <title>Buscar Telefone de Aluno</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         * {
@@ -25,7 +43,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
             padding: 30px;
-            max-width: 600px;
+            max-width: 500px;
             width: 100%;
             transition: all 0.3s ease;
         }
@@ -53,7 +71,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        select, input {
+        select {
             width: 100%;
             padding: 12px 15px;
             font-size: 16px;
@@ -61,8 +79,13 @@
             border-radius: 12px;
             background: #f7fafc;
             transition: all 0.3s ease;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
         }
-        select:focus, input:focus {
+        select:focus {
             outline: none;
             border-color: #4299e1;
             box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
@@ -72,264 +95,346 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
-        button {
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-            background: #4299e1;
-            border: none;
+        #telefones {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f7fafc;
             border-radius: 12px;
-            cursor: pointer;
+            border: 2px dashed #e2e8f0;
+            min-height: 100px;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        button:hover {
-            background: #3182ce;
-            transform: translateY(-1px);
+        #telefones.has-data {
+            border-style: solid;
+            border-color: #4299e1;
+            background: #ebf8ff;
         }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        #mensagem {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: 500;
-            display: none;
-        }
-        #mensagem.sucesso {
-            display: block;
-            background: #f0fff4;
-            color: #2f855a;
-            border: 2px solid #68d391;
-        }
-        #mensagem.erro {
-            display: block;
-            background: #fff5f5;
-            color: #c53030;
-            border: 2px solid #fc8181;
-        }
-        .linha-campos {
+        .telefone-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
         }
-        .linha-campos .form-group {
-            flex: 1;
+        .telefone-item:last-child {
+            border-bottom: none;
+        }
+        .telefone-item strong {
+            color: #2d3748;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        .telefone-item .numero {
+            font-weight: 500;
+            color: #2d3748;
+            margin-right: 10px;
+        }
+        .telefone-item .links {
+            display: flex;
+            gap: 8px;
+        }
+        .telefone-item .links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .telefone-item .links a.link-tel {
+            color: #3182ce;
+            background: #ebf8ff;
+        }
+        .telefone-item .links a.link-tel:hover {
+            background: #3182ce;
+            color: white;
+        }
+        .telefone-item .links a.link-wa {
+            color: #25D366;
+            background: #ebf8ff;
+        }
+        .telefone-item .links a.link-wa:hover {
+            background: #25D366;
+            color: white;
+        }
+        .telefone-item .sem-telefone {
+            color: #a0aec0;
+            font-style: italic;
+        }
+        .aluno-nome {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4299e1;
+        }
+        .placeholder {
+            color: #a0aec0;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 15px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #4299e1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            color: #e53e3e;
+            background: #fff5f5;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
         }
         @media (max-width: 480px) {
             .container { padding: 20px; }
             h2 { font-size: 22px; }
-            .linha-campos { flex-direction: column; gap: 0; }
+            .telefone-item { flex-direction: column; align-items: flex-start; gap: 5px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Adicionar Telefone</h2>
+        <h2>Buscar Telefone</h2>
 
         <div class="form-group">
-            <label for="aluno_nome">Nome Completo do Aluno</label>
-            <input type="text" id="aluno_nome" placeholder="Digite o nome do aluno" autocomplete="off" />
+            <label for="serie">Turma</label>
+            <select id="serie">
+                <option value="">Carregando turmas...</option>
+            </select>
         </div>
 
-        <div class="linha-campos">
-            <div class="form-group">
-                <label for="parentesco">Parentesco</label>
-                <select id="parentesco">
-                    <option value="">Selecione</option>
-                    <option value="Pai">Pai</option>
-                    <option value="Mãe">Mãe</option>
-                    <option value="Padrasto">Padrasto</option>
-                    <option value="Madrasta">Madrasta</option>
-                    <option value="Avó(ô)">Avó(ô)</option>
-                    <option value="Bisavó(ô)">Bisavó(ô)</option>
-                    <option value="Irmã(o)">Irmã(o)</option>
-                    <option value="Responsável">Responsável</option>
-                    <option value="Vizinha(a)">Vizinha(a)</option>
-                    <option value="Trabalho">Trabalho</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="ddd">DDD</label>
-                <input type="text" id="ddd" maxlength="2" placeholder="DDD" />
-            </div>
-            <div class="form-group">
-                <label for="telefone">Telefone</label>
-                <input type="text" id="telefone" maxlength="9" placeholder="Telefone" />
-            </div>
+        <div class="form-group">
+            <label for="aluno">Aluno</label>
+            <select id="aluno" disabled>
+                <option value="">Selecione uma turma primeiro</option>
+            </select>
         </div>
 
-        <button id="btn_adicionar" disabled>Adicionar Telefone</button>
-
-        <div id="mensagem"></div>
+        <div id="telefones">
+            <div class="placeholder">👤 Selecione um aluno para ver os telefones</div>
+        </div>
     </div>
 
     <script>
         // === CONFIGURAÇÕES ===
-        const SHEET_ID = '11UBrGqr1hXDQ6XcXVl5xQVsX5AIWGka7Lp8sbykRvDQ';
-        const API_KEY = 'AIzaSyB_SLqNXBHxNKxLHN9QMeR3fkYjRweXCk0'; // Substitua pela sua chave se necessário
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvElQdkqUGxgmvpMIWxBkWzm0gMgqsM2SZcAP53TYv6-ftDQ9Up3Bj6TZX5TysYBHvmYIU4u3Z_t7b/pub?gid=1202797417&single=true&output=csv';
+        const COL_TURMA = 0;
+        const COL_NOME = 1;
+        const COL_PAR1 = 2;    // C
+        const COL_TEL1 = 5;    // F
+        const COL_PAR2 = 6;    // G
+        const COL_TEL2 = 9;    // J
+        const COL_PAR3 = 10;   // K
+        const COL_TEL3 = 13;   // N
+        const COL_PAR4 = 14;   // O
+        const COL_TEL4 = 16;   // Q
 
-        const inputNome = document.getElementById('aluno_nome');
-        const selectParentesco = document.getElementById('parentesco');
-        const inputDDD = document.getElementById('ddd');
-        const inputTelefone = document.getElementById('telefone');
-        const btnAdicionar = document.getElementById('btn_adicionar');
-        const divMensagem = document.getElementById('mensagem');
+        let dados = [];
+        let dadosCarregados = false;
 
-        // ========== FUNÇÕES DE FORMATAÇÃO ==========
-        function formatarNome(texto) {
-            let nome = texto.toUpperCase();
-            nome = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            nome = nome.replace(/Ç/g, 'C').replace(/ç/g, 'C');
-            return nome;
+        // ========== FUNÇÕES AUXILIARES ==========
+        function extrairNumeroPuro(tel) {
+            if (!tel || tel.trim() === '' || tel === '—' || tel === '–') return null;
+            const puro = tel.replace(/\D/g, '');
+            if (puro.length < 8) return null;
+            return puro;
         }
 
-        function validarCampos() {
-            const nome = inputNome.value.trim();
-            const parentesco = selectParentesco.value;
-            const ddd = inputDDD.value.trim();
-            const telefone = inputTelefone.value.trim();
+        function gerarLinkWhatsApp(numero) {
+            const puro = extrairNumeroPuro(numero);
+            if (!puro) return null;
+            const mensagem = "Olá, aqui é da escola Aureliano!";
+            return `https://wa.me/55${puro}?text=${encodeURIComponent(mensagem)}`;
+        }
 
-            if (nome.length > 0 && parentesco && ddd.length === 2 && telefone.length >= 8) {
-                btnAdicionar.disabled = false;
-                return true;
-            } else {
-                btnAdicionar.disabled = true;
-                return false;
+        function gerarLinkTelefone(numero) {
+            const puro = extrairNumeroPuro(numero);
+            if (!puro) return null;
+            return `tel:${puro}`;
+        }
+
+        function formatarLinks(numero) {
+            const puro = extrairNumeroPuro(numero);
+            if (!puro) {
+                return `<span class="sem-telefone">—</span>`;
+            }
+
+            const linkTel = gerarLinkTelefone(numero);
+            const linkWa = gerarLinkWhatsApp(numero);
+
+            let html = `<span class="numero">${numero}</span>`;
+            html += `<div class="links">`;
+            if (linkTel) {
+                html += `<a href="${linkTel}" class="link-tel" title="Ligar">📞 Ligar</a>`;
+            }
+            if (linkWa) {
+                html += `<a href="${linkWa}" target="_blank" class="link-wa" title="WhatsApp">💬 WhatsApp</a>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        // ========== CARREGAMENTO DOS DADOS ==========
+        async function carregarDados() {
+            const selectSerie = document.getElementById('serie');
+            const divTelefones = document.getElementById('telefones');
+
+            try {
+                selectSerie.innerHTML = '<option value="">⏳ Carregando...</option>';
+                divTelefones.innerHTML = '<div class="placeholder"><span class="loading"></span> Carregando dados...</div>';
+
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error('Erro ao acessar a planilha');
+                const csvText = await response.text();
+                const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
+
+                if (result.errors.length > 0) {
+                    console.warn('Erros no parsing:', result.errors);
+                }
+
+                dados = result.data.filter(row => row.length > 0 && row[COL_NOME]?.trim());
+                dadosCarregados = true;
+
+                if (dados.length === 0) {
+                    throw new Error('Nenhum dado encontrado na planilha');
+                }
+
+                popularTurmas();
+                divTelefones.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+
+            } catch (err) {
+                console.error('Erro ao carregar dados:', err);
+                selectSerie.innerHTML = '<option value="">❌ Erro ao carregar</option>';
+                divTelefones.innerHTML = `<div class="error">❌ ${err.message || 'Erro ao carregar dados. Tente novamente mais tarde.'}</div>`;
             }
         }
 
-        // ========== EVENTOS DE ENTRADA ==========
-        inputNome.addEventListener('input', function() {
-            this.value = formatarNome(this.value);
-            validarCampos();
-        });
+        function popularTurmas() {
+            const turmas = [...new Set(dados.map(row => row[COL_TURMA]?.trim()).filter(v => v))].sort();
+            const select = document.getElementById('serie');
+            select.innerHTML = '<option value="">📚 Selecione a turma</option>';
+            turmas.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                select.appendChild(opt);
+            });
+            document.getElementById('aluno').disabled = true;
+        }
 
-        inputDDD.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '').slice(0, 2);
-            validarCampos();
-        });
+        // ========== EVENTOS ==========
+        document.getElementById('serie').addEventListener('change', function() {
+            const turmaSelecionada = this.value;
+            const selectAluno = document.getElementById('aluno');
+            const divTel = document.getElementById('telefones');
 
-        inputTelefone.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '').slice(0, 9);
-            validarCampos();
-        });
-
-        selectParentesco.addEventListener('change', validarCampos);
-
-        // ========== FUNÇÃO DE ADICIONAR ==========
-        btnAdicionar.addEventListener('click', async function() {
-            const nome = inputNome.value.trim();
-            const parentesco = selectParentesco.value;
-            const ddd = inputDDD.value.trim();
-            const telefone = inputTelefone.value.trim();
-            const numeroCompleto = ddd + telefone;
-
-            if (!nome || !parentesco || ddd.length !== 2 || telefone.length < 8) {
-                mostrarMensagem('Preencha todos os campos corretamente.', 'erro');
+            if (!turmaSelecionada) {
+                selectAluno.innerHTML = '<option value="">Selecione uma turma primeiro</option>';
+                selectAluno.disabled = true;
+                divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+                divTel.classList.remove('has-data');
                 return;
             }
 
-            btnAdicionar.disabled = true;
-            btnAdicionar.textContent = '⏳ Adicionando...';
+            const alunos = dados
+                .filter(row => row[COL_TURMA]?.trim() === turmaSelecionada)
+                .map(row => row[COL_NOME]?.trim())
+                .filter(v => v)
+                .sort();
 
-            try {
-                // Buscar dados atuais da planilha para encontrar o aluno
-                const urlCSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-                const response = await fetch(urlCSV);
-                const csvText = await response.text();
-                const dados = Papa.parse(csvText, { header: false, skipEmptyLines: true }).data;
-
-                // Encontrar a linha do aluno
-                let linhaAluno = -1;
-                let dadosAluno = null;
-                for (let i = 0; i < dados.length; i++) {
-                    if (dados[i][1] && dados[i][1].trim().toUpperCase() === nome) {
-                        linhaAluno = i + 1;
-                        dadosAluno = dados[i];
-                        break;
-                    }
-                }
-
-                if (linhaAluno === -1) {
-                    mostrarMensagem(`Aluno "${nome}" não encontrado na planilha.`, 'erro');
-                    btnAdicionar.disabled = false;
-                    btnAdicionar.textContent = 'Adicionar Telefone';
-                    return;
-                }
-
-                // Encontrar o próximo par vago (colunas S a Z: índices 18 a 25)
-                let colunaParentesco = null;
-                let colunaTelefone = null;
-                const colunasP = [18, 19, 20, 21]; // S, T, U, V (parentesco)
-                const colunasT = [20, 21, 22, 23]; // T, V, X, Z (telefone)
-
-                for (let i = 0; i < 4; i++) {
-                    const idxP = colunasP[i];
-                    const idxT = colunasT[i];
-                    if (!dadosAluno[idxP] || dadosAluno[idxP].trim() === '') {
-                        colunaParentesco = String.fromCharCode(65 + idxP);
-                        colunaTelefone = String.fromCharCode(65 + idxT);
-                        break;
-                    }
-                }
-
-                if (!colunaParentesco) {
-                    mostrarMensagem('Este aluno já possui 4 telefones cadastrados.', 'erro');
-                    btnAdicionar.disabled = false;
-                    btnAdicionar.textContent = 'Adicionar Telefone';
-                    return;
-                }
-
-                // Adicionar à planilha via Google Sheets API
-                const urlAPI = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${colunaParentesco}${linhaAluno}:${colunaTelefone}${linhaAluno}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
-
-                const responseAPI = await fetch(urlAPI, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        values: [[parentesco, numeroCompleto]]
-                    })
-                });
-
-                if (responseAPI.ok) {
-                    mostrarMensagem(`Telefone adicionado com sucesso para ${nome}!`, 'sucesso');
-                    limparCampos();
-                } else {
-                    const erro = await responseAPI.json();
-                    mostrarMensagem(`Erro ao adicionar: ${erro.error.message}`, 'erro');
-                }
-
-            } catch (err) {
-                mostrarMensagem(`Erro: ${err.message}`, 'erro');
-            }
-
-            btnAdicionar.disabled = false;
-            btnAdicionar.textContent = 'Adicionar Telefone';
+            selectAluno.innerHTML = '<option value="">👤 Selecione um aluno</option>';
+            alunos.forEach(nome => {
+                const opt = document.createElement('option');
+                opt.value = nome;
+                opt.textContent = nome;
+                selectAluno.appendChild(opt);
+            });
+            selectAluno.disabled = false;
+            divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+            divTel.classList.remove('has-data');
         });
 
-        // ========== FUNÇÕES AUXILIARES ==========
-        function mostrarMensagem(texto, tipo) {
-            divMensagem.className = tipo;
-            divMensagem.textContent = texto;
-            divMensagem.style.display = 'block';
-            setTimeout(() => {
-                divMensagem.style.display = 'none';
-            }, 5000);
-        }
+        document.getElementById('aluno').addEventListener('change', function() {
+            const nomeAluno = this.value;
+            const divTel = document.getElementById('telefones');
 
-        function limparCampos() {
-            selectParentesco.value = '';
-            inputDDD.value = '';
-            inputTelefone.value = '';
-            inputNome.value = '';
-            btnAdicionar.disabled = true;
-        }
+            if (!nomeAluno) {
+                divTel.innerHTML = '<div class="placeholder">👤 Selecione um aluno para ver os telefones</div>';
+                divTel.classList.remove('has-data');
+                return;
+            }
+
+            const turma = document.getElementById('serie').value;
+            const aluno = dados.find(row =>
+                row[COL_NOME]?.trim() === nomeAluno &&
+                row[COL_TURMA]?.trim() === turma
+            );
+
+            if (!aluno) {
+                divTel.innerHTML = '<div class="error">❌ Aluno não encontrado. Tente novamente.</div>';
+                divTel.classList.remove('has-data');
+                return;
+            }
+
+            // Monta lista com todos os 4 contatos
+            const contatos = [
+                { label: 'Telefone 1', tel: aluno[COL_TEL1], parentesco: aluno[COL_PAR1] },
+                { label: 'Telefone 2', tel: aluno[COL_TEL2], parentesco: aluno[COL_PAR2] },
+                { label: 'Telefone 3', tel: aluno[COL_TEL3], parentesco: aluno[COL_PAR3] },
+                { label: 'Telefone 4', tel: aluno[COL_TEL4], parentesco: aluno[COL_PAR4] }
+            ];
+
+            let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
+            let temAlgumTelefone = false;
+
+            contatos.forEach(info => {
+                const linksHtml = formatarLinks(info.tel);
+                // Verifica se o telefone é válido (não é o span de "—")
+                if (!linksHtml.includes('sem-telefone')) {
+                    temAlgumTelefone = true;
+                }
+                let label = info.label;
+                if (info.parentesco && info.parentesco.trim() !== '') {
+                    label += ` (${info.parentesco.trim()})`;
+                }
+                html += `<div class="telefone-item"><strong>${label}</strong> ${linksHtml}</div>`;
+            });
+
+            if (!temAlgumTelefone) {
+                html += '<div class="placeholder" style="margin-top:10px;">📭 Nenhum telefone cadastrado para este aluno</div>';
+            }
+
+            divTel.innerHTML = html;
+            divTel.classList.add('has-data');
+        });
+
+        // Inicialização
+        carregarDados();
+
+        // Recarregar com Cmd/Ctrl + R (opcional)
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
+                if (confirm('Recarregar os dados da planilha?')) {
+                    carregarDados();
+                }
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
