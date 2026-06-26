@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adicionar Telefones de Aluno</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        h2 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: "📞";
+            font-size: 28px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
+            background-color: white;
+        }
+        select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: #4299e1;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        button:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #mensagem {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: none;
+        }
+        #mensagem.sucesso {
+            display: block;
+            background: #f0fff4;
+            color: #2f855a;
+            border: 2px solid #68d391;
+        }
+        #mensagem.erro {
+            display: block;
+            background: #fff5f5;
+            color: #c53030;
+            border: 2px solid #fc8181;
+        }
+        .linha-campos {
+            display: flex;
+            gap: 10px;
+        }
+        .linha-campos .form-group {
+            flex: 1;
+        }
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            h2 { font-size: 22px; }
+            .linha-campos { flex-direction: column; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Adicionar Telefone</h2>
+
+        <div class="form-group">
+            <label for="aluno_nome">Nome Completo do Aluno</label>
+            <input type="text" id="aluno_nome" placeholder="Digite o nome do aluno" autocomplete="off" />
+        </div>
+
+        <div class="linha-campos">
+            <div class="form-group">
+                <label for="parentesco">Parentesco</label>
+                <select id="parentesco">
+                    <option value="">Selecione</option>
+                    <option value="Pai">Pai</option>
+                    <option value="Mãe">Mãe</option>
+                    <option value="Padrasto">Padrasto</option>
+                    <option value="Madrasta">Madrasta</option>
+                    <option value="Avó(ô)">Avó(ô)</option>
+                    <option value="Bisavó(ô)">Bisavó(ô)</option>
+                    <option value="Irmã(o)">Irmã(o)</option>
+                    <option value="Responsável">Responsável</option>
+                    <option value="Vizinha(a)">Vizinha(a)</option>
+                    <option value="Trabalho">Trabalho</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ddd">DDD</label>
+                <input type="text" id="ddd" maxlength="2" placeholder="DDD" />
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="text" id="telefone" maxlength="9" placeholder="Telefone" />
+            </div>
+        </div>
+
+        <button id="btn_adicionar" disabled>Adicionar Telefone</button>
+
+        <div id="mensagem"></div>
+    </div>
+
+    <script>
+        // === CONFIGURAÇÕES ===
+        const SHEET_ID = '11UBrGqr1hXDQ6XcXVl5xQVsX5AIWGka7Lp8sbykRvDQ';
+        const API_KEY = 'AIzaSyB_SLqNXBHxNKxLHN9QMeR3fkYjRweXCk0'; // Substitua pela sua chave se necessário
+
+        const inputNome = document.getElementById('aluno_nome');
+        const selectParentesco = document.getElementById('parentesco');
+        const inputDDD = document.getElementById('ddd');
+        const inputTelefone = document.getElementById('telefone');
+        const btnAdicionar = document.getElementById('btn_adicionar');
+        const divMensagem = document.getElementById('mensagem');
+
+        // ========== FUNÇÕES DE FORMATAÇÃO ==========
+        function formatarNome(texto) {
+            let nome = texto.toUpperCase();
+            nome = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            nome = nome.replace(/Ç/g, 'C').replace(/ç/g, 'C');
+            return nome;
+        }
+
+        function validarCampos() {
+            const nome = inputNome.value.trim();
+            const parentesco = selectParentesco.value;
+            const ddd = inputDDD.value.trim();
+            const telefone = inputTelefone.value.trim();
+
+            if (nome.length > 0 && parentesco && ddd.length === 2 && telefone.length >= 8) {
+                btnAdicionar.disabled = false;
+                return true;
+            } else {
+                btnAdicionar.disabled = true;
+                return false;
+            }
+        }
+
+        // ========== EVENTOS DE ENTRADA ==========
+        inputNome.addEventListener('input', function() {
+            this.value = formatarNome(this.value);
+            validarCampos();
+        });
+
+        inputDDD.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 2);
+            validarCampos();
+        });
+
+        inputTelefone.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 9);
+            validarCampos();
+        });
+
+        selectParentesco.addEventListener('change', validarCampos);
+
+        // ========== FUNÇÃO DE ADICIONAR ==========
+        btnAdicionar.addEventListener('click', async function() {
+            const nome = inputNome.value.trim();
+            const parentesco = selectParentesco.value;
+            const ddd = inputDDD.value.trim();
+            const telefone = inputTelefone.value.trim();
+            const numeroCompleto = ddd + telefone;
+
+            if (!nome || !parentesco || ddd.length !== 2 || telefone.length < 8) {
+                mostrarMensagem('Preencha todos os campos corretamente.', 'erro');
+                return;
+            }
+
+            btnAdicionar.disabled = true;
+            btnAdicionar.textContent = '⏳ Adicionando...';
+
+            try {
+                // Buscar dados atuais da planilha para encontrar o aluno
+                const urlCSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+                const response = await fetch(urlCSV);
+                const csvText = await response.text();
+                const dados = Papa.parse(csvText, { header: false, skipEmptyLines: true }).data;
+
+                // Encontrar a linha do aluno
+                let linhaAluno = -1;
+                let dadosAluno = null;
+                for (let i = 0; i < dados.length; i++) {
+                    if (dados[i][1] && dados[i][1].trim().toUpperCase() === nome) {
+                        linhaAluno = i + 1;
+                        dadosAluno = dados[i];
+                        break;
+                    }
+                }
+
+                if (linhaAluno === -1) {
+                    mostrarMensagem(`Aluno "${nome}" não encontrado na planilha.`, 'erro');
+                    btnAdicionar.disabled = false;
+                    btnAdicionar.textContent = 'Adicionar Telefone';
+                    return;
+                }
+
+                // Encontrar o próximo par vago (colunas S a Z: índices 18 a 25)
+                let colunaParentesco = null;
+                let colunaTelefone = null;
+                const colunasP = [18, 19, 20, 21]; // S, T, U, V (parentesco)
+                const colunasT = [20, 21, 22, 23]; // T, V, X, Z (telefone)
+
+                for (let i = 0; i < 4; i++) {
+                    const idxP = colunasP[i];
+                    const idxT = colunasT[i];
+                    if (!dadosAluno[idxP] || dadosAluno[idxP].trim() === '') {
+                        colunaParentesco = String.fromCharCode(65 + idxP);
+                        colunaTelefone = String.fromCharCode(65 + idxT);
+                        break;
+                    }
+                }
+
+                if (!colunaParentesco) {
+                    mostrarMensagem('Este aluno já possui 4 telefones cadastrados.', 'erro');
+                    btnAdicionar.disabled = false;
+                    btnAdicionar.textContent = 'Adicionar Telefone';
+                    return;
+                }
+
+                // Adicionar à planilha via Google Sheets API
+                const urlAPI = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${colunaParentesco}${linhaAluno}:${colunaTelefone}${linhaAluno}?valueInputOption=USER_ENTERED&key=${API_KEY}`;
+
+                const responseAPI = await fetch(urlAPI, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        values: [[parentesco, numeroCompleto]]
+                    })
+                });
+
+                if (responseAPI.ok) {
+                    mostrarMensagem(`Telefone adicionado com sucesso para ${nome}!`, 'sucesso');
+                    limparCampos();
+                } else {
+                    const erro = await responseAPI.json();
+                    mostrarMensagem(`Erro ao adicionar: ${erro.error.message}`, 'erro');
+                }
+
+            } catch (err) {
+                mostrarMensagem(`Erro: ${err.message}`, 'erro');
+            }
+
+            btnAdicionar.disabled = false;
+            btnAdicionar.textContent = 'Adicionar Telefone';
+        });
+
+        // ========== FUNÇÕES AUXILIARES ==========
+        function mostrarMensagem(texto, tipo) {
+            divMensagem.className = tipo;
+            divMensagem.textContent = texto;
+            divMensagem.style.display = 'block';
+            setTimeout(() => {
+                divMensagem.style.display = 'none';
+            }, 5000);
+        }
+
+        function limparCampos() {
+            selectParentesco.value = '';
+            inputDDD.value = '';
+            inputTelefone.value = '';
+            inputNome.value = '';
+            btnAdicionar.disabled = true;
+        }
+    </script>
+</body>
+</html>
