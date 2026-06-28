@@ -279,18 +279,37 @@
     // ================================================================
     // 3. FUNÇÕES DE COMUNICAÇÃO COM O WEB APP
     // ================================================================
-    async function chamarApi(action, params = {}) {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, ...params })
+   async function chamarApi(action, params = {}) {
+    // Ações de leitura: usamos GET (sem preflight)
+    if (action === 'getSheets' || action === 'getFullSheet') {
+        const url = new URL(API_URL);
+        url.searchParams.append('action', action);
+        for (const [key, value] of Object.entries(params)) {
+            url.searchParams.append(key, JSON.stringify(value));
+        }
+
+        const response = await fetch(url, {
+            method: 'GET',
+            mode: 'cors'
         });
         if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         const data = await response.json();
         if (data.error) throw new Error(data.error);
         return data;
     }
+
+    // Ações de escrita: usamos POST com Content-Type: text/plain (evita preflight)
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action, ...params })
+    });
+    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+}
 
     // ================================================================
     // 4. CARREGAR LISTA DE TURMAS
