@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Editar Dados da Planilha</title>
+    <title>Editar Dados de Contatos</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f0f4f8;
@@ -24,7 +20,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.10);
             padding: 30px;
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
         }
         h2 {
@@ -34,13 +30,8 @@
             align-items: center;
             gap: 10px;
         }
-        h2::before {
-            content: "✏️";
-            font-size: 28px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
+        h2::before { content: "✏️"; font-size: 28px; }
+        .form-group { margin-bottom: 20px; }
         label {
             display: block;
             font-weight: 600;
@@ -65,18 +56,13 @@
             box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
             background: white;
         }
-        select:disabled, input:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+        select:disabled, input:disabled { opacity: 0.6; cursor: not-allowed; }
         .row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        @media (max-width: 600px) {
-            .row { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
 
         #area-edicao {
             margin-top: 25px;
@@ -93,23 +79,35 @@
             background: #ebf8ff;
         }
 
-        .campo-edicao {
+        /* ===== NOVO: linha com 3 campos ===== */
+        .linha-campos {
+            display: grid;
+            grid-template-columns: 1fr 0.7fr 1fr;
+            gap: 15px;
             margin-bottom: 15px;
+            align-items: end;
         }
-        .campo-edicao label {
+        .linha-campos .campo-edicao {
+            margin-bottom: 0;
+        }
+        .linha-campos .campo-edicao label {
             font-size: 13px;
             text-transform: none;
             font-weight: 600;
             color: #2d3748;
+            margin-bottom: 4px;
         }
-        .campo-edicao input {
+        .linha-campos .campo-edicao input,
+        .linha-campos .campo-edicao select {
             background: white;
             border: 1px solid #cbd5e0;
             border-radius: 8px;
             padding: 10px 12px;
             font-size: 15px;
+            width: 100%;
         }
-        .campo-edicao input:focus {
+        .linha-campos .campo-edicao input:focus,
+        .linha-campos .campo-edicao select:focus {
             border-color: #4299e1;
         }
 
@@ -130,15 +128,6 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-        }
-        .btn-primary {
-            background: #4299e1;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66,153,225,0.3);
         }
         .btn-success {
             background: #48bb78;
@@ -180,22 +169,13 @@
             margin-right: 10px;
             vertical-align: middle;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .error {
             color: #e53e3e;
             background: #fff5f5;
             padding: 12px;
             border-radius: 8px;
             border-left: 4px solid #e53e3e;
-        }
-        .success {
-            color: #276749;
-            background: #f0fff4;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid #48bb78;
         }
         .aluno-nome {
             font-size: 20px;
@@ -217,9 +197,7 @@
             border-radius: 8px;
             display: none;
         }
-        .status-msg.show {
-            display: block;
-        }
+        .status-msg.show { display: block; }
         .status-msg.success {
             background: #f0fff4;
             border: 1px solid #48bb78;
@@ -235,9 +213,8 @@
 <body>
 
 <div class="container">
-    <h2>Editar Alunos</h2>
+    <h2>Editar Dados de Contatos</h2>
 
-    <!-- ====== SELETORES ====== -->
     <div class="row">
         <div class="form-group">
             <label for="selectTurma">Turma</label>
@@ -253,12 +230,10 @@
         </div>
     </div>
 
-    <!-- ====== ÁREA DE EDIÇÃO ====== -->
     <div id="area-edicao">
         <div class="placeholder">👤 Selecione um aluno para editar os dados</div>
     </div>
 
-    <!-- ====== STATUS ====== -->
     <div id="statusMsg" class="status-msg"></div>
 </div>
 
@@ -266,32 +241,62 @@
     // ================================================================
     // 1. CONFIGURAÇÃO
     // ================================================================
-    // ⚠️ SUBSTITUA PELA URL DO SEU WEB APP (obtida ao publicar)
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwpeaP1XGYJk7W49YYoocZvPP5A-AAJdg6nwmhm2mOUw7Oo-7tt720iNKKWjmlHOJCxuQ/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxkRDB-PWxBhFE6NxV-V2bhlCSENtoPYCHdusqoWwQ7i_RTHCbx5TeuCUeH8yMW5Q8wDw/exec';
 
     // ================================================================
     // 2. ESTADO
     // ================================================================
-    let dadosCompletos = {};      // { sheetName: [ [linha0], [linha1], ... ] }
-    let cabecalhos = {};          // { sheetName: [col0, col1, ...] }
-    let alunoSelecionado = null;  // { nome, linhaIndex, dados: {} }
+    let dadosCompletos = {};
+    let alunoSelecionado = null;
 
     // ================================================================
-    // 3. FUNÇÕES DE COMUNICAÇÃO COM O WEB APP
+    // 3. MAPEAMENTO DOS CAMPOS (índices 0-based) - IGUAL AO BACKEND
     // ================================================================
-async function chamarApi(action, params = {}) {
-    // ===== LEITURA (GET) =====
-    if (action === 'getSheets' || action === 'getFullSheet') {
-        const url = new URL(API_URL);
-        url.searchParams.append('action', action);
-        // ❗ Envie os valores como string simples, sem JSON.stringify
-        for (const [key, value] of Object.entries(params)) {
-            url.searchParams.append(key, value);
+    const CAMPOS = [
+        { label: 'Parentesco 1', index: 1 },
+        { label: 'DDD 1', index: 2 },
+        { label: 'Telefone 1', index: 3 },
+        { label: 'Parentesco 2', index: 5 },
+        { label: 'DDD 2', index: 6 },
+        { label: 'Telefone 2', index: 7 },
+        { label: 'Parentesco 3', index: 9 },
+        { label: 'DDD 3', index: 10 },
+        { label: 'Telefone 3', index: 11 },
+        { label: 'Parentesco 4', index: 13 },
+        { label: 'DDD 4', index: 14 },
+        { label: 'Telefone 4', index: 15 }
+    ];
+
+    const OPCOES_PARENTESCO = [
+        'Mãe', 'Pai', 'Padrastro', 'Madrastra', 'Tia(o)',
+        'Avó(ô)', 'Irmã(o)', 'Bisavó(ô)', 'Responsável',
+        'Vizinha(o)', 'Trabalho'
+    ];
+
+    const NOME_INDEX = 0;
+
+    // ================================================================
+    // 4. FUNÇÃO DE COMUNICAÇÃO COM A API
+    // ================================================================
+    async function chamarApi(action, params = {}) {
+        if (action === 'getSheets' || action === 'getFullSheet') {
+            const url = new URL(API_URL);
+            url.searchParams.append('action', action);
+            for (const [key, value] of Object.entries(params)) {
+                url.searchParams.append(key, value);
+            }
+            const response = await fetch(url, { method: 'GET', mode: 'cors' });
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            return data;
         }
 
-        const response = await fetch(url, {
-            method: 'GET',
-            mode: 'cors'
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action, ...params })
         });
         if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         const data = await response.json();
@@ -299,21 +304,8 @@ async function chamarApi(action, params = {}) {
         return data;
     }
 
-    // ===== Ações de ESCRITA (POST) – com text/plain para evitar CORS =====
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action, ...params })
-    });
-    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-    const data = await response.json();
-    if (data.error) throw new Error(data.error);
-    return data;
-}
-
     // ================================================================
-    // 4. CARREGAR LISTA DE TURMAS
+    // 5. CARREGAR TURMAS
     // ================================================================
     async function carregarTurmas() {
         const select = document.getElementById('selectTurma');
@@ -322,12 +314,9 @@ async function chamarApi(action, params = {}) {
             select.innerHTML = '<option value="">⏳ Carregando...</option>';
             const result = await chamarApi('getSheets');
             const sheets = result.sheets || [];
-
-            // Filtra apenas as turmas (ex: 1A, 1B, ...) - ignora "TELEFONS" se existir
             const turmas = sheets
                 .filter(n => /^[1-5][A-E]$/.test(n) || /^4[A-D]$/.test(n))
                 .sort();
-
             select.innerHTML = '<option value="">📚 Selecione a turma</option>';
             turmas.forEach(t => {
                 const opt = document.createElement('option');
@@ -335,11 +324,9 @@ async function chamarApi(action, params = {}) {
                 opt.textContent = t;
                 select.appendChild(opt);
             });
-
             document.getElementById('selectAluno').disabled = true;
             area.innerHTML = '<div class="placeholder">👤 Selecione uma turma primeiro</div>';
             area.classList.remove('has-data');
-
         } catch (err) {
             console.error(err);
             select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
@@ -348,31 +335,25 @@ async function chamarApi(action, params = {}) {
     }
 
     // ================================================================
-    // 5. CARREGAR DADOS DE UMA TURMA
+    // 6. CARREGAR DADOS DE UMA TURMA
     // ================================================================
     async function carregarDadosTurma(sheetName) {
         const selectAluno = document.getElementById('selectAluno');
         const area = document.getElementById('area-edicao');
-
         try {
             area.innerHTML = '<div class="placeholder"><span class="loading"></span> Carregando alunos...</div>';
-
             const result = await chamarApi('getFullSheet', { sheetName });
             const data = result || [];
-
             if (data.length < 2) {
-                area.innerHTML = '<div class="placeholder">📭 Nenhum aluno cadastrado nesta turma</div>';
+                area.innerHTML = '<div class="placeholder">📭 Nenhum aluno cadastrado</div>';
                 selectAluno.innerHTML = '<option value="">Nenhum aluno</option>';
                 selectAluno.disabled = true;
                 return;
             }
-
-            // Guarda os dados completos
             dadosCompletos[sheetName] = data;
-            cabecalhos[sheetName] = data[0];
-
-            // Popula o dropdown de alunos (ignora o cabeçalho)
-            const nomes = data.slice(1).map(row => row[0]?.trim() || '').filter(n => n);
+            const nomes = data.slice(1)
+                .map(row => row[NOME_INDEX]?.trim() || '')
+                .filter(n => n);
             selectAluno.innerHTML = '<option value="">👤 Selecione um aluno</option>';
             nomes.forEach(nome => {
                 const opt = document.createElement('option');
@@ -381,11 +362,8 @@ async function chamarApi(action, params = {}) {
                 selectAluno.appendChild(opt);
             });
             selectAluno.disabled = false;
-
-            // Limpa a área de edição
             area.innerHTML = '<div class="placeholder">👤 Selecione um aluno para editar</div>';
             area.classList.remove('has-data');
-
         } catch (err) {
             console.error(err);
             area.innerHTML = `<div class="error">❌ ${err.message}</div>`;
@@ -395,53 +373,62 @@ async function chamarApi(action, params = {}) {
     }
 
     // ================================================================
-    // 6. EXIBIR ALUNO PARA EDIÇÃO
+    // 7. EXIBIR ALUNO PARA EDIÇÃO (com linhas agrupadas e select)
     // ================================================================
     function exibirAluno(sheetName, nomeAluno) {
         const area = document.getElementById('area-edicao');
         const data = dadosCompletos[sheetName];
         if (!data) {
-            area.innerHTML = '<div class="error">❌ Dados da turma não carregados</div>';
+            area.innerHTML = '<div class="error">❌ Dados não carregados</div>';
             return;
         }
-
-        const headers = cabecalhos[sheetName];
-        // Procura a linha do aluno (ignora cabeçalho)
-        const linhaIndex = data.findIndex((row, idx) => idx > 0 && row[0]?.trim() === nomeAluno);
+        const linhaIndex = data.findIndex((row, idx) =>
+            idx > 0 && row[NOME_INDEX]?.trim() === nomeAluno
+        );
         if (linhaIndex === -1) {
             area.innerHTML = `<div class="error">❌ Aluno "${nomeAluno}" não encontrado</div>`;
             return;
         }
-
         const linha = data[linhaIndex];
-        const alunoObj = {};
-        headers.forEach((h, i) => {
-            alunoObj[h] = linha[i] || '';
-        });
-
         alunoSelecionado = {
             nome: nomeAluno,
             linhaIndex: linhaIndex,
-            dados: alunoObj,
-            headers: headers,
             linhaRaw: linha,
             sheetName: sheetName
         };
 
-        // Monta o HTML de edição
         let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
         html += `<div style="margin-bottom:12px; font-size:14px; color:#718096;">Edite os campos abaixo e clique em <strong>Salvar</strong>.</div>`;
 
-        // Para cada coluna (exceto a primeira, que é o nome)
-        for (let i = 1; i < headers.length; i++) {
-            const chave = headers[i];
-            const valor = alunoObj[chave] || '';
-            html += `
-                <div class="campo-edicao">
-                    <label>${chave}</label>
-                    <input type="text" id="campo_${i}" value="${escapeHtml(valor)}" data-colindex="${i}" />
-                </div>
-            `;
+        // Agrupar os campos de 3 em 3 (Parentesco, DDD, Telefone)
+        for (let i = 0; i < CAMPOS.length; i += 3) {
+            const grupo = CAMPOS.slice(i, i + 3);
+            const num = Math.floor(i / 3) + 1;
+
+            html += `<div class="linha-campos">`;
+            grupo.forEach(campo => {
+                const valor = linha[campo.index] || '';
+                const inputId = `campo_${campo.index}`;
+                const isParentesco = campo.label.startsWith('Parentesco');
+
+                html += `<div class="campo-edicao">`;
+                html += `<label for="${inputId}">${campo.label}</label>`;
+
+                if (isParentesco) {
+                    html += `<select id="${inputId}" data-colindex="${campo.index}">`;
+                    html += `<option value="">Selecione</option>`;
+                    OPCOES_PARENTESCO.forEach(op => {
+                        const selected = (op === valor) ? 'selected' : '';
+                        html += `<option value="${escapeHtml(op)}" ${selected}>${escapeHtml(op)}</option>`;
+                    });
+                    html += `</select>`;
+                } else {
+                    html += `<input type="text" id="${inputId}" value="${escapeHtml(valor)}" data-colindex="${campo.index}" />`;
+                }
+
+                html += `</div>`;
+            });
+            html += `</div>`;
         }
 
         html += `
@@ -454,56 +441,44 @@ async function chamarApi(action, params = {}) {
 
         area.innerHTML = html;
         area.classList.add('has-data');
-
-        // Esconde mensagem de status anterior
         document.getElementById('statusMsg').className = 'status-msg';
         document.getElementById('statusMsg').textContent = '';
     }
 
     // ================================================================
-    // 7. SALVAR ALTERAÇÕES
+    // 8. SALVAR ALTERAÇÕES
     // ================================================================
     async function salvarAluno() {
         if (!alunoSelecionado) {
             mostrarStatus('Nenhum aluno selecionado.', 'error');
             return;
         }
-
         const btn = document.getElementById('btnSalvar');
         btn.disabled = true;
         btn.textContent = '⏳ Salvando...';
-
         try {
             const sheetName = alunoSelecionado.sheetName;
             const linhaIndex = alunoSelecionado.linhaIndex;
-            const headers = alunoSelecionado.headers;
+            const linhaOriginal = alunoSelecionado.linhaRaw;
+            const novaLinha = [...linhaOriginal];
 
-            // Coleta os valores dos inputs
-            const novaLinha = [...alunoSelecionado.linhaRaw];
-            for (let i = 1; i < headers.length; i++) {
-                const input = document.getElementById(`campo_${i}`);
-                if (input) {
-                    novaLinha[i] = input.value;
+            CAMPOS.forEach(campo => {
+                const el = document.getElementById(`campo_${campo.index}`);
+                if (el) {
+                    novaLinha[campo.index] = el.value;
                 }
-            }
+            });
 
-            // Atualiza a linha na planilha via API
             await chamarApi('updateRow', {
                 sheetName: sheetName,
-                rowIndex: linhaIndex,       // 0-based entre os dados (sem cabeçalho)
+                rowIndex: linhaIndex,
                 rowData: novaLinha
             });
 
-            // Atualiza o cache local
             dadosCompletos[sheetName][linhaIndex] = novaLinha;
             alunoSelecionado.linhaRaw = novaLinha;
-            // Atualiza o objeto de dados
-            headers.forEach((h, i) => {
-                alunoSelecionado.dados[h] = novaLinha[i] || '';
-            });
 
             mostrarStatus('✅ Alterações salvas com sucesso!', 'success');
-
         } catch (err) {
             console.error(err);
             mostrarStatus(`❌ Erro ao salvar: ${err.message}`, 'error');
@@ -514,7 +489,7 @@ async function chamarApi(action, params = {}) {
     }
 
     // ================================================================
-    // 8. CANCELAR EDIÇÃO
+    // 9. CANCELAR EDIÇÃO
     // ================================================================
     function cancelarEdicao() {
         if (alunoSelecionado) {
@@ -525,7 +500,7 @@ async function chamarApi(action, params = {}) {
     }
 
     // ================================================================
-    // 9. UTILITÁRIOS
+    // 10. UTILITÁRIOS
     // ================================================================
     function escapeHtml(text) {
         const div = document.createElement('div');
@@ -540,13 +515,12 @@ async function chamarApi(action, params = {}) {
     }
 
     // ================================================================
-    // 10. EVENTOS
+    // 11. EVENTOS
     // ================================================================
     document.getElementById('selectTurma').addEventListener('change', function() {
         const turma = this.value;
         const selectAluno = document.getElementById('selectAluno');
         const area = document.getElementById('area-edicao');
-
         if (!turma) {
             selectAluno.innerHTML = '<option value="">Selecione uma turma primeiro</option>';
             selectAluno.disabled = true;
@@ -554,7 +528,6 @@ async function chamarApi(action, params = {}) {
             area.classList.remove('has-data');
             return;
         }
-
         carregarDadosTurma(turma);
     });
 
@@ -566,11 +539,10 @@ async function chamarApi(action, params = {}) {
     });
 
     // ================================================================
-    // 11. INICIALIZAÇÃO
+    // 12. INICIALIZAÇÃO
     // ================================================================
     carregarTurmas();
 
-    // (Opcional) Recarregar com Cmd/Ctrl + R
     document.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
             if (confirm('Recarregar os dados da planilha?')) {
@@ -580,6 +552,5 @@ async function chamarApi(action, params = {}) {
         }
     });
 </script>
-
 </body>
 </html>
