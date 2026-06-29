@@ -250,7 +250,7 @@
     let alunoSelecionado = null;
 
     // ================================================================
-    // 3. MAPEAMENTO DOS CAMPOS (índices 0-based da planilha)
+    // 3. MAPEAMENTO DOS CAMPOS (índices 0-based) - IGUAL AO BACKEND
     // ================================================================
     const CAMPOS = [
         { label: 'Parentesco 1', index: 1 },
@@ -267,7 +267,6 @@
         { label: 'Telefone 4', index: 15 }
     ];
 
-    // Opções para o dropdown de Parentesco
     const OPCOES_PARENTESCO = [
         'Mãe', 'Pai', 'Padrastro', 'Madrastra', 'Tia(o)',
         'Avó(ô)', 'Irmã(o)', 'Bisavó(ô)', 'Responsável',
@@ -403,8 +402,8 @@
 
         // Agrupar os campos de 3 em 3 (Parentesco, DDD, Telefone)
         for (let i = 0; i < CAMPOS.length; i += 3) {
-            const grupo = CAMPOS.slice(i, i + 3); // [Parentesco, DDD, Telefone]
-            const num = Math.floor(i / 3) + 1; // 1 a 4
+            const grupo = CAMPOS.slice(i, i + 3);
+            const num = Math.floor(i / 3) + 1;
 
             html += `<div class="linha-campos">`;
             grupo.forEach(campo => {
@@ -416,9 +415,7 @@
                 html += `<label for="${inputId}">${campo.label}</label>`;
 
                 if (isParentesco) {
-                    // Dropdown
                     html += `<select id="${inputId}" data-colindex="${campo.index}">`;
-                    // Adiciona uma opção vazia (caso o valor não esteja na lista)
                     html += `<option value="">Selecione</option>`;
                     OPCOES_PARENTESCO.forEach(op => {
                         const selected = (op === valor) ? 'selected' : '';
@@ -426,7 +423,6 @@
                     });
                     html += `</select>`;
                 } else {
-                    // Input text para DDD e Telefone
                     html += `<input type="text" id="${inputId}" value="${escapeHtml(valor)}" data-colindex="${campo.index}" />`;
                 }
 
@@ -450,7 +446,7 @@
     }
 
     // ================================================================
-    // 8. SALVAR ALTERAÇÕES (ajustado para select)
+    // 8. SALVAR ALTERAÇÕES
     // ================================================================
     async function salvarAluno() {
         if (!alunoSelecionado) {
@@ -466,7 +462,6 @@
             const linhaOriginal = alunoSelecionado.linhaRaw;
             const novaLinha = [...linhaOriginal];
 
-            // Atualiza todos os campos (input ou select)
             CAMPOS.forEach(campo => {
                 const el = document.getElementById(`campo_${campo.index}`);
                 if (el) {
@@ -557,6 +552,5 @@
         }
     });
 </script>
-
 </body>
 </html>
