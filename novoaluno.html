@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inserir Novo Aluno</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.10);
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* BOTÃO INÍCIO */
+        .btn-inicio {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .btn-inicio:hover {
+            background: #1a202c;
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: "➕";
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        select,
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+        }
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+            background: white;
+        }
+        select:disabled,
+        input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* LINHA DE CAMPOS: Parentesco | DDD (menor) | Telefone (maior) */
+        .linha-campos {
+            display: grid;
+            grid-template-columns: 1fr 0.5fr 1.2fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: end;
+        }
+        .linha-campos .campo-edicao {
+            margin-bottom: 0;
+        }
+        .linha-campos .campo-edicao label {
+            font-size: 13px;
+            text-transform: none;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        .linha-campos .campo-edicao input,
+        .linha-campos .campo-edicao select {
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 15px;
+            width: 100%;
+        }
+        .linha-campos .campo-edicao input:focus,
+        .linha-campos .campo-edicao select:focus {
+            border-color: #4299e1;
+        }
+
+        .botoes {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+        .btn-danger {
+            background: #fc8181;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #f56565;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-msg {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status-msg.show {
+            display: block;
+        }
+        .status-msg.success {
+            background: #f0fff4;
+            border: 1px solid #48bb78;
+            color: #276749;
+        }
+        .status-msg.error {
+            background: #fff5f5;
+            border: 1px solid #fc8181;
+            color: #c53030;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #4299e1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .info-extra {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .error {
+            color: #e53e3e;
+            background: #fff5f5;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
+        }
+
+        @media (max-width: 600px) {
+            .linha-campos {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- BOTÃO INÍCIO -->
+        <a href="index.html" class="btn-inicio">🏠 Início</a>
+
+        <h2>Inserir Novo Aluno</h2>
+
+        <!-- SELECIONAR TURMA (ABA) -->
+        <div class="form-group">
+            <label for="selectTurma">Turma (aba)</label>
+            <select id="selectTurma">
+                <option value="">Carregando turmas...</option>
+            </select>
+        </div>
+
+        <!-- NOME DO ALUNO -->
+        <div class="form-group">
+            <label for="nomeAluno">Nome do Aluno</label>
+            <input type="text" id="nomeAluno" placeholder="Digite o nome completo" />
+        </div>
+
+        <!-- 4 CONTATOS -->
+        <div id="contatos-area">
+            <div style="font-weight:600; color:#2d3748; margin: 20px 0 10px;">Contatos</div>
+
+            <!-- Contato 1 -->
+            <div class="linha-campos">
+                <div class="campo-edicao">
+                    <label for="parentesco1">Parentesco 1</label>
+                    <select id="parentesco1">
+                        <option value="">Selecione</option>
+                    </select>
+                </div>
+                <div class="campo-edicao">
+                    <label for="ddd1">DDD 1</label>
+                    <input type="text" id="ddd1" maxlength="3" placeholder="DDD" />
+                </div>
+                <div class="campo-edicao">
+                    <label for="telefone1">Telefone 1</label>
+                    <input type="text" id="telefone1" placeholder="Número" />
+                </div>
+            </div>
+
+            <!-- Contato 2 -->
+            <div class="linha-campos">
+                <div class="campo-edicao">
+                    <label for="parentesco2">Parentesco 2</label>
+                    <select id="parentesco2">
+                        <option value="">Selecione</option>
+                    </select>
+                </div>
+                <div class="campo-edicao">
+                    <label for="ddd2">DDD 2</label>
+                    <input type="text" id="ddd2" maxlength="3" placeholder="DDD" />
+                </div>
+                <div class="campo-edicao">
+                    <label for="telefone2">Telefone 2</label>
+                    <input type="text" id="telefone2" placeholder="Número" />
+                </div>
+            </div>
+
+            <!-- Contato 3 -->
+            <div class="linha-campos">
+                <div class="campo-edicao">
+                    <label for="parentesco3">Parentesco 3</label>
+                    <select id="parentesco3">
+                        <option value="">Selecione</option>
+                    </select>
+                </div>
+                <div class="campo-edicao">
+                    <label for="ddd3">DDD 3</label>
+                    <input type="text" id="ddd3" maxlength="3" placeholder="DDD" />
+                </div>
+                <div class="campo-edicao">
+                    <label for="telefone3">Telefone 3</label>
+                    <input type="text" id="telefone3" placeholder="Número" />
+                </div>
+            </div>
+
+            <!-- Contato 4 -->
+            <div class="linha-campos">
+                <div class="campo-edicao">
+                    <label for="parentesco4">Parentesco 4</label>
+                    <select id="parentesco4">
+                        <option value="">Selecione</option>
+                    </select>
+                </div>
+                <div class="campo-edicao">
+                    <label for="ddd4">DDD 4</label>
+                    <input type="text" id="ddd4" maxlength="3" placeholder="DDD" />
+                </div>
+                <div class="campo-edicao">
+                    <label for="telefone4">Telefone 4</label>
+                    <input type="text" id="telefone4" placeholder="Número" />
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTÕES -->
+        <div class="botoes">
+            <button class="btn btn-success" id="btnInserir" onclick="inserirAluno()">💾 Inserir Aluno</button>
+            <button class="btn btn-danger" onclick="limparFormulario()">🗑️ Limpar</button>
+        </div>
+
+        <div id="statusMsg" class="status-msg"></div>
+        <div class="info-extra">* O nome será convertido para maiúsculas, sem acentos e com Ç substituído por C.</div>
+    </div>
+
+    <script>
+        // ================================================================
+        // 1. CONFIGURAÇÃO
+        // ================================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxkRDB-PWxBhFE6NxV-V2bhlCSENtoPYCHdusqoWwQ7i_RTHCbx5TeuCUeH8yMW5Q8wDw/exec';
+
+        // ================================================================
+        // 2. MAPEAMENTO DOS CAMPOS (índices 0-based) - MESMO DO BACKEND
+        // ================================================================
+        const CAMPOS = [
+            { label: 'Parentesco 1', index: 1 },
+            { label: 'DDD 1', index: 2 },
+            { label: 'Telefone 1', index: 3 },
+            { label: 'Parentesco 2', index: 5 },
+            { label: 'DDD 2', index: 6 },
+            { label: 'Telefone 2', index: 7 },
+            { label: 'Parentesco 3', index: 9 },
+            { label: 'DDD 3', index: 10 },
+            { label: 'Telefone 3', index: 11 },
+            { label: 'Parentesco 4', index: 13 },
+            { label: 'DDD 4', index: 14 },
+            { label: 'Telefone 4', index: 15 }
+        ];
+
+        const OPCOES_PARENTESCO = [
+            'Mãe', 'Pai', 'Padrastro', 'Madrastra', 'Tia(o)',
+            'Avó(ô)', 'Irmã(o)', 'Bisavó(ô)', 'Responsável',
+            'Vizinha(o)', 'Trabalho'
+        ];
+
+        const NOME_INDEX = 0;
+
+        // ================================================================
+        // 3. FUNÇÃO DE COMUNICAÇÃO COM A API
+        // ================================================================
+        async function chamarApi(action, params = {}) {
+            if (action === 'getSheets' || action === 'getFullSheet') {
+                const url = new URL(API_URL);
+                url.searchParams.append('action', action);
+                for (const [key, value] of Object.entries(params)) {
+                    url.searchParams.append(key, value);
+                }
+                const response = await fetch(url, { method: 'GET', mode: 'cors' });
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                return data;
+            }
+
+            // POST para ações que escrevem (insertRow, updateRow)
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action, ...params })
+            });
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            return data;
+        }
+
+        // ================================================================
+        // 4. CARREGAR TURMAS
+        // ================================================================
+        async function carregarTurmas() {
+            const select = document.getElementById('selectTurma');
+            try {
+                select.innerHTML = '<option value="">⏳ Carregando...</option>';
+                const result = await chamarApi('getSheets');
+                const sheets = result.sheets || [];
+                const turmas = sheets
+                    .filter(n => /^[1-5][A-E]$/.test(n) || /^4[A-D]$/.test(n))
+                    .sort();
+                select.innerHTML = '<option value="">📚 Selecione a turma</option>';
+                turmas.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    opt.textContent = t;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error(err);
+                select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
+                mostrarStatus('❌ Erro ao carregar turmas: ' + err.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // 5. POPULAR DROPDOWNS DE PARENTESCO
+        // ================================================================
+        function popularParentescos() {
+            const selects = document.querySelectorAll('[id^="parentesco"]');
+            selects.forEach(sel => {
+                sel.innerHTML = '<option value="">Selecione</option>';
+                OPCOES_PARENTESCO.forEach(op => {
+                    const opt = document.createElement('option');
+                    opt.value = op;
+                    opt.textContent = op;
+                    sel.appendChild(opt);
+                });
+            });
+        }
+
+        // ================================================================
+        // 6. FORMATAÇÃO DO NOME (maiúsculas, sem acentos, Ç->C)
+        // ================================================================
+        function formatarNome(nome) {
+            // Remove acentos
+            const semAcentos = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            // Substitui Ç por C e ç por c
+            const semCedilha = semAcentos.replace(/[Çç]/g, function(match) {
+                return match === 'Ç' ? 'C' : 'c';
+            });
+            // Maiúsculas
+            return semCedilha.toUpperCase();
+        }
+
+        // ================================================================
+        // 7. INSERIR ALUNO
+        // ================================================================
+        async function inserirAluno() {
+            const btn = document.getElementById('btnInserir');
+            btn.disabled = true;
+            btn.textContent = '⏳ Inserindo...';
+
+            try {
+                // 1. Validar turma
+                const turma = document.getElementById('selectTurma').value;
+                if (!turma) {
+                    throw new Error('Selecione uma turma (aba).');
+                }
+
+                // 2. Validar nome
+                const nomeInput = document.getElementById('nomeAluno');
+                let nome = nomeInput.value.trim();
+                if (!nome) {
+                    throw new Error('Digite o nome do aluno.');
+                }
+                nome = formatarNome(nome);
+                nomeInput.value = nome; // atualiza o campo com o nome formatado
+
+                // 3. Coletar dados dos contatos
+                const contatos = [];
+                for (let i = 1; i <= 4; i++) {
+                    const parentesco = document.getElementById(`parentesco${i}`).value;
+                    const ddd = document.getElementById(`ddd${i}`).value.trim();
+                    const telefone = document.getElementById(`telefone${i}`).value.trim();
+                    contatos.push({ parentesco, ddd, telefone });
+                }
+
+                // 4. Montar a linha de dados (array com 17 colunas – 0 a 16)
+                // Índices: 0=Nome, 1=Parent1, 2=DDD1, 3=Tel1, 4=vazio, 5=Parent2, 6=DDD2, 7=Tel2, 8=vazio, 9=Parent3, 10=DDD3, 11=Tel3, 12=vazio, 13=Parent4, 14=DDD4, 15=Tel4, 16=vazio (ou fórmulas)
+                const novaLinha = new Array(17).fill('');
+                novaLinha[NOME_INDEX] = nome;
+
+                // Mapear os contatos para os índices
+                const mapeamento = [
+                    { parentIdx: 1, dddIdx: 2, telIdx: 3 },
+                    { parentIdx: 5, dddIdx: 6, telIdx: 7 },
+                    { parentIdx: 9, dddIdx: 10, telIdx: 11 },
+                    { parentIdx: 13, dddIdx: 14, telIdx: 15 }
+                ];
+
+                contatos.forEach((c, idx) => {
+                    const map = mapeamento[idx];
+                    novaLinha[map.parentIdx] = c.parentesco;
+                    novaLinha[map.dddIdx] = c.ddd;
+                    novaLinha[map.telIdx] = c.telefone;
+                });
+
+                // 5. Chamar a API para inserir
+                await chamarApi('insertRow', {
+                    sheetName: turma,
+                    rowData: novaLinha
+                });
+
+                mostrarStatus('✅ Aluno inserido com sucesso!', 'success');
+                limparFormulario();
+
+            } catch (err) {
+                console.error(err);
+                mostrarStatus(`❌ Erro: ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '💾 Inserir Aluno';
+            }
+        }
+
+        // ================================================================
+        // 8. LIMPAR FORMULÁRIO
+        // ================================================================
+        function limparFormulario() {
+            document.getElementById('nomeAluno').value = '';
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`parentesco${i}`).value = '';
+                document.getElementById(`ddd${i}`).value = '';
+                document.getElementById(`telefone${i}`).value = '';
+            }
+            document.getElementById('statusMsg').className = 'status-msg';
+            document.getElementById('statusMsg').textContent = '';
+            // Mantém a turma selecionada
+        }
+
+        // ================================================================
+        // 9. MOSTRAR STATUS
+        // ================================================================
+        function mostrarStatus(msg, tipo) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.className = `status-msg show ${tipo}`;
+        }
+
+        // ================================================================
+        // 10. INICIALIZAÇÃO
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarTurmas();
+            popularParentescos();
+
+            // Aplicar formatação automática no campo nome (ao perder o foco)
+            document.getElementById('nomeAluno').addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    this.value = formatarNome(this.value.trim());
+                }
+            });
+        });
+
+        // ================================================================
+        // 11. BACKEND NECESSÁRIO (GAS)
+        //    Adicione a função insertRow ao seu script do Google Apps Script
+        // ================================================================
+        /*
+        function insertRow(sheetName, rowData) {
+            const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+            const sheet = ss.getSheetByName(sheetName);
+            if (!sheet) throw new Error(`Aba "${sheetName}" não encontrada`);
+
+            // Encontra a próxima linha vazia a partir da linha 3 (índice 2)
+            const startRow = 2; // 0-based: linha 3
+            const lastRow = sheet.getLastRow();
+            let newRowIndex = Math.max(startRow, lastRow + 1);
+
+            // Se a última linha for menor que startRow, usamos startRow
+            if (lastRow < startRow) newRowIndex = startRow;
+
+            // Escreve a nova linha
+            sheet.getRange(newRowIndex + 1, 1, 1, rowData.length).setValues([rowData]);
+            return { success: true };
+        }
+
+        // No doPost, adicione:
+        // case 'insertRow':
+        //   insertRow(params.sheetName, params.rowData);
+        //   result = { success: true };
+        //   break;
+        */
+    </script>
+</body>
+</html>
