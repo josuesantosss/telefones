@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Editar Dados da Planilha</title>
     <style>
-        /* (mesmo CSS que você já tem, mantido) */
+        /* (mesmo CSS que você já tem – mantido) */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -116,15 +116,6 @@
             align-items: center;
             gap: 8px;
         }
-        .btn-primary {
-            background: #4299e1;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66,153,225,0.3);
-        }
         .btn-success {
             background: #48bb78;
             color: white;
@@ -172,13 +163,6 @@
             padding: 12px;
             border-radius: 8px;
             border-left: 4px solid #e53e3e;
-        }
-        .success {
-            color: #276749;
-            background: #f0fff4;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 4px solid #48bb78;
         }
         .aluno-nome {
             font-size: 20px;
@@ -248,7 +232,7 @@
     // 1. CONFIGURAÇÃO
     // ================================================================
     // ⚠️ SUBSTITUA PELA URL DO SEU WEB APP
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzYO05rFQqfiRjQRWl4Rpz7BvXMqhA0Fvhvj46iPszHkTDbxCKAZA52ogRKmfj1sQSGmw/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwpeaP1XGYJk7W49YYoocZvPP5A-AAJdg6nwmhm2mOUw7Oo-7tt720iNKKWjmlHOJCxuQ/exec';
 
     // ================================================================
     // 2. ESTADO
@@ -431,9 +415,8 @@
         html += `<div style="margin-bottom:12px; font-size:14px; color:#718096;">Edite os campos abaixo e clique em <strong>Salvar</strong>.</div>`;
 
         // Gera campos apenas para as colunas definidas em CAMPOS
-        CAMPOS.forEach((campo, idx) => {
+        CAMPOS.forEach((campo) => {
             const valor = linha[campo.index] || '';
-            // Usamos um id único baseado no índice da coluna
             const inputId = `campo_${campo.index}`;
             html += `
                 <div class="campo-edicao">
