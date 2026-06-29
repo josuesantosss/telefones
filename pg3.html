@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Editar Dados da Planilha</title>
     <style>
-        /* (mesmo CSS que você já tem – mantido) */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -202,7 +201,6 @@
 <div class="container">
     <h2>Editar Alunos</h2>
 
-    <!-- ====== SELETORES ====== -->
     <div class="row">
         <div class="form-group">
             <label for="selectTurma">Turma</label>
@@ -218,12 +216,10 @@
         </div>
     </div>
 
-    <!-- ====== ÁREA DE EDIÇÃO ====== -->
     <div id="area-edicao">
         <div class="placeholder">👤 Selecione um aluno para editar os dados</div>
     </div>
 
-    <!-- ====== STATUS ====== -->
     <div id="statusMsg" class="status-msg"></div>
 </div>
 
@@ -231,58 +227,51 @@
     // ================================================================
     // 1. CONFIGURAÇÃO
     // ================================================================
-    // ⚠️ SUBSTITUA PELA URL DO SEU WEB APP
     const API_URL = 'https://script.google.com/macros/s/AKfycbxkRDB-PWxBhFE6NxV-V2bhlCSENtoPYCHdusqoWwQ7i_RTHCbx5TeuCUeH8yMW5Q8wDw/exec';
 
     // ================================================================
     // 2. ESTADO
     // ================================================================
-    let dadosCompletos = {};      // { sheetName: [ [linha0], [linha1], ... ] }
-    let alunoSelecionado = null;  // { nome, linhaIndex, linhaRaw, sheetName }
+    let dadosCompletos = {};
+    let alunoSelecionado = null;
 
     // ================================================================
-    // 3. MAPEAMENTO DOS CAMPOS EDITÁVEIS (índices 0-based)
+    // 3. MAPEAMENTO DOS CAMPOS (índices 0-based da planilha)
     // ================================================================
     const CAMPOS = [
-        { label: 'Parentesco 1', index: 18 },  // coluna S
-        { label: 'DDD 1',       index: 19 },  // coluna T
-        { label: 'Telefone 1',  index: 20 },  // coluna U
-        { label: 'Parentesco 2', index: 22 }, // coluna W
-        { label: 'DDD 2',       index: 23 },  // coluna X
-        { label: 'Telefone 2',  index: 24 },  // coluna Y
-        { label: 'Parentesco 3', index: 26 }, // coluna AA
-        { label: 'DDD 3',       index: 27 },  // coluna AB
-        { label: 'Telefone 3',  index: 28 },  // coluna AC
-        { label: 'Parentesco 4', index: 30 }, // coluna AE
-        { label: 'DDD 4',       index: 31 },  // coluna AF
-        { label: 'Telefone 4',  index: 32 }   // coluna AG
+        { label: 'Parentesco 1', index: 1 },
+        { label: 'DDD 1', index: 2 },
+        { label: 'Telefone 1', index: 3 },
+        { label: 'Parentesco 2', index: 4 },
+        { label: 'DDD 2', index: 5 },
+        { label: 'Telefone 2', index: 6 },
+        { label: 'Parentesco 3', index: 8 },
+        { label: 'DDD 3', index: 9 },
+        { label: 'Telefone 3', index: 10 },
+        { label: 'Parentesco 4', index: 12 },
+        { label: 'DDD 4', index: 13 },
+        { label: 'Telefone 4', index: 14 }
     ];
 
-    // Índice da coluna que contém o nome do aluno (coluna E)
-    const NOME_INDEX = 4;
+    const NOME_INDEX = 0;
 
     // ================================================================
-    // 4. FUNÇÕES DE COMUNICAÇÃO COM O WEB APP
+    // 4. FUNÇÃO DE COMUNICAÇÃO COM A API
     // ================================================================
     async function chamarApi(action, params = {}) {
-        // LEITURA (GET)
         if (action === 'getSheets' || action === 'getFullSheet') {
             const url = new URL(API_URL);
             url.searchParams.append('action', action);
             for (const [key, value] of Object.entries(params)) {
                 url.searchParams.append(key, value);
             }
-            const response = await fetch(url, {
-                method: 'GET',
-                mode: 'cors'
-            });
+            const response = await fetch(url, { method: 'GET', mode: 'cors' });
             if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
             const data = await response.json();
             if (data.error) throw new Error(data.error);
             return data;
         }
 
-        // ESCRITA (POST)
         const response = await fetch(API_URL, {
             method: 'POST',
             mode: 'cors',
@@ -296,7 +285,7 @@
     }
 
     // ================================================================
-    // 5. CARREGAR LISTA DE TURMAS
+    // 5. CARREGAR TURMAS
     // ================================================================
     async function carregarTurmas() {
         const select = document.getElementById('selectTurma');
@@ -305,12 +294,9 @@
             select.innerHTML = '<option value="">⏳ Carregando...</option>';
             const result = await chamarApi('getSheets');
             const sheets = result.sheets || [];
-
-            // Filtra apenas as turmas (ex: 1A, 1B, ...)
             const turmas = sheets
                 .filter(n => /^[1-5][A-E]$/.test(n) || /^4[A-D]$/.test(n))
                 .sort();
-
             select.innerHTML = '<option value="">📚 Selecione a turma</option>';
             turmas.forEach(t => {
                 const opt = document.createElement('option');
@@ -318,11 +304,9 @@
                 opt.textContent = t;
                 select.appendChild(opt);
             });
-
             document.getElementById('selectAluno').disabled = true;
             area.innerHTML = '<div class="placeholder">👤 Selecione uma turma primeiro</div>';
             area.classList.remove('has-data');
-
         } catch (err) {
             console.error(err);
             select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
@@ -336,28 +320,20 @@
     async function carregarDadosTurma(sheetName) {
         const selectAluno = document.getElementById('selectAluno');
         const area = document.getElementById('area-edicao');
-
         try {
             area.innerHTML = '<div class="placeholder"><span class="loading"></span> Carregando alunos...</div>';
-
             const result = await chamarApi('getFullSheet', { sheetName });
             const data = result || [];
-
             if (data.length < 2) {
-                area.innerHTML = '<div class="placeholder">📭 Nenhum aluno cadastrado nesta turma</div>';
+                area.innerHTML = '<div class="placeholder">📭 Nenhum aluno cadastrado</div>';
                 selectAluno.innerHTML = '<option value="">Nenhum aluno</option>';
                 selectAluno.disabled = true;
                 return;
             }
-
-            // Guarda os dados completos (incluindo cabeçalho)
             dadosCompletos[sheetName] = data;
-
-            // Popula o dropdown de alunos usando a coluna E (índice NOME_INDEX)
             const nomes = data.slice(1)
                 .map(row => row[NOME_INDEX]?.trim() || '')
                 .filter(n => n);
-
             selectAluno.innerHTML = '<option value="">👤 Selecione um aluno</option>';
             nomes.forEach(nome => {
                 const opt = document.createElement('option');
@@ -366,11 +342,8 @@
                 selectAluno.appendChild(opt);
             });
             selectAluno.disabled = false;
-
-            // Limpa a área de edição
             area.innerHTML = '<div class="placeholder">👤 Selecione um aluno para editar</div>';
             area.classList.remove('has-data');
-
         } catch (err) {
             console.error(err);
             area.innerHTML = `<div class="error">❌ ${err.message}</div>`;
@@ -386,23 +359,17 @@
         const area = document.getElementById('area-edicao');
         const data = dadosCompletos[sheetName];
         if (!data) {
-            area.innerHTML = '<div class="error">❌ Dados da turma não carregados</div>';
+            area.innerHTML = '<div class="error">❌ Dados não carregados</div>';
             return;
         }
-
-        // Procura a linha do aluno (ignorando cabeçalho) pelo nome na coluna E
         const linhaIndex = data.findIndex((row, idx) =>
             idx > 0 && row[NOME_INDEX]?.trim() === nomeAluno
         );
-
         if (linhaIndex === -1) {
             area.innerHTML = `<div class="error">❌ Aluno "${nomeAluno}" não encontrado</div>`;
             return;
         }
-
         const linha = data[linhaIndex];
-
-        // Armazena o estado do aluno selecionado
         alunoSelecionado = {
             nome: nomeAluno,
             linhaIndex: linhaIndex,
@@ -410,12 +377,10 @@
             sheetName: sheetName
         };
 
-        // Monta o HTML de edição
         let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
         html += `<div style="margin-bottom:12px; font-size:14px; color:#718096;">Edite os campos abaixo e clique em <strong>Salvar</strong>.</div>`;
 
-        // Gera campos apenas para as colunas definidas em CAMPOS
-        CAMPOS.forEach((campo) => {
+        CAMPOS.forEach(campo => {
             const valor = linha[campo.index] || '';
             const inputId = `campo_${campo.index}`;
             html += `
@@ -436,8 +401,6 @@
 
         area.innerHTML = html;
         area.classList.add('has-data');
-
-        // Esconde mensagem de status anterior
         document.getElementById('statusMsg').className = 'status-msg';
         document.getElementById('statusMsg').textContent = '';
     }
@@ -450,20 +413,15 @@
             mostrarStatus('Nenhum aluno selecionado.', 'error');
             return;
         }
-
         const btn = document.getElementById('btnSalvar');
         btn.disabled = true;
         btn.textContent = '⏳ Salvando...';
-
         try {
             const sheetName = alunoSelecionado.sheetName;
             const linhaIndex = alunoSelecionado.linhaIndex;
             const linhaOriginal = alunoSelecionado.linhaRaw;
-
-            // Cria uma cópia da linha original
             const novaLinha = [...linhaOriginal];
 
-            // Atualiza apenas os campos definidos em CAMPOS
             CAMPOS.forEach(campo => {
                 const input = document.getElementById(`campo_${campo.index}`);
                 if (input) {
@@ -471,19 +429,16 @@
                 }
             });
 
-            // Atualiza a linha na planilha via API
             await chamarApi('updateRow', {
                 sheetName: sheetName,
-                rowIndex: linhaIndex,       // 0-based entre os dados (sem cabeçalho)
+                rowIndex: linhaIndex,
                 rowData: novaLinha
             });
 
-            // Atualiza o cache local
             dadosCompletos[sheetName][linhaIndex] = novaLinha;
             alunoSelecionado.linhaRaw = novaLinha;
 
             mostrarStatus('✅ Alterações salvas com sucesso!', 'success');
-
         } catch (err) {
             console.error(err);
             mostrarStatus(`❌ Erro ao salvar: ${err.message}`, 'error');
@@ -526,7 +481,6 @@
         const turma = this.value;
         const selectAluno = document.getElementById('selectAluno');
         const area = document.getElementById('area-edicao');
-
         if (!turma) {
             selectAluno.innerHTML = '<option value="">Selecione uma turma primeiro</option>';
             selectAluno.disabled = true;
@@ -534,7 +488,6 @@
             area.classList.remove('has-data');
             return;
         }
-
         carregarDadosTurma(turma);
     });
 
@@ -550,7 +503,6 @@
     // ================================================================
     carregarTurmas();
 
-    // Recarregar com Cmd/Ctrl + R
     document.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
             if (confirm('Recarregar os dados da planilha?')) {
