@@ -23,6 +23,28 @@
             max-width: 900px;
             width: 100%;
         }
+
+        /* BOTÃO INÍCIO */
+        .btn-inicio {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .btn-inicio:hover {
+            background: #1a202c;
+            transform: translateY(-2px);
+        }
+
         h2 {
             color: #2d3748;
             margin-bottom: 25px;
@@ -79,10 +101,10 @@
             background: #ebf8ff;
         }
 
-        /* ===== NOVO: linha com 3 campos ===== */
+        /* ===== LINHA DE CAMPOS COM AJUSTES ===== */
         .linha-campos {
             display: grid;
-            grid-template-columns: 1fr 0.7fr 1fr;
+            grid-template-columns: 1fr 0.5fr 1.2fr; /* DDD menor, Telefone maior */
             gap: 15px;
             margin-bottom: 15px;
             align-items: end;
@@ -213,6 +235,9 @@
 <body>
 
 <div class="container">
+    <!-- BOTÃO INÍCIO -->
+    <a href="index.html" class="btn-inicio">🏠 Início</a>
+
     <h2>Editar Dados de Contatos</h2>
 
     <div class="row">
