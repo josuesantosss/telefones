@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buscar Telefone de Aluno</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js">
+    </script>
     <style>
         * {
             box-sizing: border-box;
@@ -23,7 +24,7 @@
         .container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             padding: 30px;
             max-width: 500px;
             width: 100%;
@@ -70,7 +71,7 @@
         select:focus {
             outline: none;
             border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
             background-color: white;
         }
         select:disabled {
@@ -108,9 +109,11 @@
             margin-right: 10px;
         }
         .telefone-item .numero {
-            font-weight: 500;
+            font-weight: 600;
             color: #2d3748;
             margin-right: 10px;
+            font-size: 18px;
+            padding: 4px 0;
         }
         .telefone-item .links {
             display: flex;
@@ -173,7 +176,9 @@
             vertical-align: middle;
         }
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
         .error {
             color: #e53e3e;
@@ -182,15 +187,52 @@
             border-radius: 8px;
             border-left: 4px solid #e53e3e;
         }
+
+        /* ---- BOTÃO INÍCIO ---- */
+        .btn-inicio {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .btn-inicio:hover {
+            background: #1a202c;
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 480px) {
-            .container { padding: 20px; }
-            h2 { font-size: 22px; }
-            .telefone-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+            .container {
+                padding: 20px;
+            }
+            h2 {
+                font-size: 22px;
+            }
+            .telefone-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .telefone-item .numero {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+
+        <!-- BOTÃO INÍCIO -->
+        <a href="index.html" class="btn-inicio">🏠 Início</a>
+
         <h2>Buscar Telefone</h2>
 
         <div class="form-group">
@@ -213,21 +255,34 @@
     </div>
 
     <script>
-        // === CONFIGURAÇÕES ===
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvElQdkqUGxgmvpMIWxBkWzm0gMgqsM2SZcAP53TYv6-ftDQ9Up3Bj6TZX5TysYBHvmYIU4u3Z_t7b/pub?gid=1202797417&single=true&output=csv';
+        // ============================================================
+        // CONFIGURAÇÃO – substitua o gid pelo ID da aba "BANCO DE DADOS"
+        // ============================================================
+        const CSV_URL =
+            'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvElQdkqUGxgmvpMIWxBkWzm0gMgqsM2SZcAP53TYv6-ftDQ9Up3Bj6TZX5TysYBHvmYIU4u3Z_t7b/pub?gid=SEU_GID_AQUI&single=true&output=csv';
+        // 👆 Troque "SEU_GID_AQUI" pelo número do gid da aba "BANCO DE DADOS".
+
+        // Mapeamento das colunas (índices 0-based) conforme a aba:
+        // A=0 (Turma), B=1 (Nome), C=2 (Parent1), D=3 (DDD1), E=4 (Tel1),
+        // F=5 (vazio), G=6 (Parent2), H=7 (DDD2), I=8 (Tel2),
+        // J=9 (vazio), K=10 (Parent3), L=11 (DDD3), M=12 (Tel3),
+        // N=13 (vazio), O=14 (Parent4), P=15 (DDD4), Q=16 (Tel4)
         const COL_TURMA = 0;
         const COL_NOME = 1;
-        const COL_PAR1 = 2;    // C
-        const COL_TEL1 = 5;    // F
-        const COL_PAR2 = 6;    // G
-        const COL_TEL2 = 9;    // J
-        const COL_PAR3 = 10;   // K
-        const COL_TEL3 = 13;   // N
-        const COL_PAR4 = 14;   // O
-        const COL_TEL4 = 16;   // Q
+        const COL_PAR1 = 2;
+        const COL_DDD1 = 3;
+        const COL_TEL1 = 4;
+        const COL_PAR2 = 6;
+        const COL_DDD2 = 7;
+        const COL_TEL2 = 8;
+        const COL_PAR3 = 10;
+        const COL_DDD3 = 11;
+        const COL_TEL3 = 12;
+        const COL_PAR4 = 14;
+        const COL_DDD4 = 15;
+        const COL_TEL4 = 16;
 
         let dados = [];
-        let dadosCarregados = false;
 
         // ========== FUNÇÕES AUXILIARES ==========
         function extrairNumeroPuro(tel) {
@@ -271,6 +326,17 @@
             return html;
         }
 
+        // Concatena DDD e telefone, formatando como (DDD) Telefone ou DDDTelefone
+        function concatenarTelefone(ddd, telefone) {
+            const d = (ddd || '').trim();
+            const t = (telefone || '').trim();
+            if (!d && !t) return '';
+            if (!d) return t;
+            if (!t) return d;
+            // Formato: (DDD) Telefone
+            return `(${d}) ${t}`;
+        }
+
         // ========== CARREGAMENTO DOS DADOS ==========
         async function carregarDados() {
             const selectSerie = document.getElementById('serie');
@@ -290,8 +356,6 @@
                 }
 
                 dados = result.data.filter(row => row.length > 0 && row[COL_NOME]?.trim());
-                dadosCarregados = true;
-
                 if (dados.length === 0) {
                     throw new Error('Nenhum dado encontrado na planilha');
                 }
@@ -302,7 +366,8 @@
             } catch (err) {
                 console.error('Erro ao carregar dados:', err);
                 selectSerie.innerHTML = '<option value="">❌ Erro ao carregar</option>';
-                divTelefones.innerHTML = `<div class="error">❌ ${err.message || 'Erro ao carregar dados. Tente novamente mais tarde.'}</div>`;
+                divTelefones.innerHTML =
+                    `<div class="error">❌ ${err.message || 'Erro ao carregar dados. Tente novamente mais tarde.'}</div>`;
             }
         }
 
@@ -373,20 +438,41 @@
                 return;
             }
 
-            // Monta lista com todos os 4 contatos
+            // Monta lista com os 4 contatos, concatenando DDD + Telefone
             const contatos = [
-                { label: 'Telefone 1', tel: aluno[COL_TEL1], parentesco: aluno[COL_PAR1] },
-                { label: 'Telefone 2', tel: aluno[COL_TEL2], parentesco: aluno[COL_PAR2] },
-                { label: 'Telefone 3', tel: aluno[COL_TEL3], parentesco: aluno[COL_PAR3] },
-                { label: 'Telefone 4', tel: aluno[COL_TEL4], parentesco: aluno[COL_PAR4] }
+                {
+                    label: 'Telefone 1',
+                    parentesco: aluno[COL_PAR1],
+                    ddd: aluno[COL_DDD1],
+                    telefone: aluno[COL_TEL1]
+                },
+                {
+                    label: 'Telefone 2',
+                    parentesco: aluno[COL_PAR2],
+                    ddd: aluno[COL_DDD2],
+                    telefone: aluno[COL_TEL2]
+                },
+                {
+                    label: 'Telefone 3',
+                    parentesco: aluno[COL_PAR3],
+                    ddd: aluno[COL_DDD3],
+                    telefone: aluno[COL_TEL3]
+                },
+                {
+                    label: 'Telefone 4',
+                    parentesco: aluno[COL_PAR4],
+                    ddd: aluno[COL_DDD4],
+                    telefone: aluno[COL_TEL4]
+                }
             ];
 
             let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
             let temAlgumTelefone = false;
 
             contatos.forEach(info => {
-                const linksHtml = formatarLinks(info.tel);
-                // Verifica se o telefone é válido (não é o span de "—")
+                // Concatena DDD e telefone para exibição e links
+                const numeroCompleto = concatenarTelefone(info.ddd, info.telefone);
+                const linksHtml = formatarLinks(numeroCompleto);
                 if (!linksHtml.includes('sem-telefone')) {
                     temAlgumTelefone = true;
                 }
@@ -405,7 +491,7 @@
             divTel.classList.add('has-data');
         });
 
-        // Inicialização
+        // ========== INICIALIZAÇÃO ==========
         carregarDados();
 
         // Recarregar com Cmd/Ctrl + R (opcional)
