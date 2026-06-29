@@ -20,7 +20,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.10);
             padding: 30px;
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
         }
         h2 {
@@ -79,23 +79,37 @@
             background: #ebf8ff;
         }
 
-        .campo-edicao {
+        /* ===== NOVO: linha com 3 campos ===== */
+        .linha-campos {
+            display: grid;
+            grid-template-columns: 1fr 0.7fr 1fr;
+            gap: 15px;
             margin-bottom: 15px;
+            align-items: end;
         }
-        .campo-edicao label {
+        .linha-campos .campo-edicao {
+            margin-bottom: 0;
+        }
+        .linha-campos .campo-edicao label {
             font-size: 13px;
             text-transform: none;
             font-weight: 600;
             color: #2d3748;
+            margin-bottom: 4px;
         }
-        .campo-edicao input {
+        .linha-campos .campo-edicao input,
+        .linha-campos .campo-edicao select {
             background: white;
             border: 1px solid #cbd5e0;
             border-radius: 8px;
             padding: 10px 12px;
             font-size: 15px;
+            width: 100%;
         }
-        .campo-edicao input:focus { border-color: #4299e1; }
+        .linha-campos .campo-edicao input:focus,
+        .linha-campos .campo-edicao select:focus {
+            border-color: #4299e1;
+        }
 
         .botoes {
             display: flex;
@@ -253,6 +267,13 @@
         { label: 'Telefone 4', index: 15 }
     ];
 
+    // Opções para o dropdown de Parentesco
+    const OPCOES_PARENTESCO = [
+        'Mãe', 'Pai', 'Padrastro', 'Madrastra', 'Tia(o)',
+        'Avó(ô)', 'Irmã(o)', 'Bisavó(ô)', 'Responsável',
+        'Vizinha(o)', 'Trabalho'
+    ];
+
     const NOME_INDEX = 0;
 
     // ================================================================
@@ -353,7 +374,7 @@
     }
 
     // ================================================================
-    // 7. EXIBIR ALUNO PARA EDIÇÃO
+    // 7. EXIBIR ALUNO PARA EDIÇÃO (com linhas agrupadas e select)
     // ================================================================
     function exibirAluno(sheetName, nomeAluno) {
         const area = document.getElementById('area-edicao');
@@ -380,16 +401,39 @@
         let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
         html += `<div style="margin-bottom:12px; font-size:14px; color:#718096;">Edite os campos abaixo e clique em <strong>Salvar</strong>.</div>`;
 
-        CAMPOS.forEach(campo => {
-            const valor = linha[campo.index] || '';
-            const inputId = `campo_${campo.index}`;
-            html += `
-                <div class="campo-edicao">
-                    <label for="${inputId}">${campo.label}</label>
-                    <input type="text" id="${inputId}" value="${escapeHtml(valor)}" data-colindex="${campo.index}" />
-                </div>
-            `;
-        });
+        // Agrupar os campos de 3 em 3 (Parentesco, DDD, Telefone)
+        for (let i = 0; i < CAMPOS.length; i += 3) {
+            const grupo = CAMPOS.slice(i, i + 3); // [Parentesco, DDD, Telefone]
+            const num = Math.floor(i / 3) + 1; // 1 a 4
+
+            html += `<div class="linha-campos">`;
+            grupo.forEach(campo => {
+                const valor = linha[campo.index] || '';
+                const inputId = `campo_${campo.index}`;
+                const isParentesco = campo.label.startsWith('Parentesco');
+
+                html += `<div class="campo-edicao">`;
+                html += `<label for="${inputId}">${campo.label}</label>`;
+
+                if (isParentesco) {
+                    // Dropdown
+                    html += `<select id="${inputId}" data-colindex="${campo.index}">`;
+                    // Adiciona uma opção vazia (caso o valor não esteja na lista)
+                    html += `<option value="">Selecione</option>`;
+                    OPCOES_PARENTESCO.forEach(op => {
+                        const selected = (op === valor) ? 'selected' : '';
+                        html += `<option value="${escapeHtml(op)}" ${selected}>${escapeHtml(op)}</option>`;
+                    });
+                    html += `</select>`;
+                } else {
+                    // Input text para DDD e Telefone
+                    html += `<input type="text" id="${inputId}" value="${escapeHtml(valor)}" data-colindex="${campo.index}" />`;
+                }
+
+                html += `</div>`;
+            });
+            html += `</div>`;
+        }
 
         html += `
             <div class="botoes">
@@ -406,7 +450,7 @@
     }
 
     // ================================================================
-    // 8. SALVAR ALTERAÇÕES
+    // 8. SALVAR ALTERAÇÕES (ajustado para select)
     // ================================================================
     async function salvarAluno() {
         if (!alunoSelecionado) {
@@ -422,10 +466,11 @@
             const linhaOriginal = alunoSelecionado.linhaRaw;
             const novaLinha = [...linhaOriginal];
 
+            // Atualiza todos os campos (input ou select)
             CAMPOS.forEach(campo => {
-                const input = document.getElementById(`campo_${campo.index}`);
-                if (input) {
-                    novaLinha[campo.index] = input.value;
+                const el = document.getElementById(`campo_${campo.index}`);
+                if (el) {
+                    novaLinha[campo.index] = el.value;
                 }
             });
 
