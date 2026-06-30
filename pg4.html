@@ -188,7 +188,7 @@
             border-left: 4px solid #e53e3e;
         }
 
-        /* ---- BOTÃO INÍCIO ---- */
+        /* ---- BOTÕES ---- */
         .btn-inicio {
             display: inline-flex;
             align-items: center;
@@ -209,6 +209,51 @@
             transform: translateY(-2px);
         }
 
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fc8181;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            margin-left: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-logout:hover {
+            background: #f56565;
+            transform: translateY(-2px);
+        }
+
+        .usuario-info {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .usuario-info .sessao-timer {
+            font-size: 12px;
+            color: #718096;
+            background: #edf2f7;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 20px;
@@ -224,14 +269,31 @@
             .telefone-item .numero {
                 font-size: 16px;
             }
+            .usuario-info {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .btn-logout {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
 
-        <!-- BOTÃO INÍCIO -->
-        <a href="index.html" class="btn-inicio">🏠 Início</a>
+        <!-- BOTÕES INÍCIO E LOGOUT -->
+        <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+            <a href="index.html" class="btn-inicio">🏠 Início</a>
+            <button onclick="fazerLogout()" class="btn-logout">🚪 Sair</button>
+        </div>
+
+        <!-- INFORMAÇÕES DO USUÁRIO -->
+        <div class="usuario-info" id="usuarioInfo">
+            <span>👤 <span id="nomeUsuario">Carregando...</span></span>
+            <span class="sessao-timer" id="timerSessao">⏱️ 10:00</span>
+        </div>
 
         <h2>Buscar Telefone</h2>
 
@@ -256,17 +318,151 @@
 
     <script>
         // ============================================================
-        // CONFIGURAÇÃO – substitua o gid pelo ID da aba "BANCO DE DADOS"
+        // 1. CONTROLE DE SESSÃO (LOGOUT APÓS 10 MINUTOS)
+        // ============================================================
+        const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutos
+        let timeoutId = null;
+        let timerInterval = null;
+        let segundosRestantes = 600; // 10 minutos em segundos
+
+        function realizarLogout() {
+            sessionStorage.removeItem('usuarioLogado');
+            sessionStorage.removeItem('ultimaAtividade');
+            
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            window.location.href = 'login.html?timeout=1';
+        }
+
+        function resetarTimer() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            
+            const usuario = sessionStorage.getItem('usuarioLogado');
+            if (!usuario) {
+                realizarLogout();
+                return;
+            }
+
+            // Atualiza o timestamp da última atividade
+            sessionStorage.setItem('ultimaAtividade', Date.now().toString());
+
+            timeoutId = setTimeout(() => {
+                realizarLogout();
+            }, SESSION_TIMEOUT);
+        }
+
+        function atualizarAtividade() {
+            if (sessionStorage.getItem('usuarioLogado')) {
+                sessionStorage.setItem('ultimaAtividade', Date.now().toString());
+                resetarTimer();
+                reiniciarTimerVisual();
+            }
+        }
+
+        function reiniciarTimerVisual() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            segundosRestantes = 600;
+            atualizarTimerVisual();
+
+            timerInterval = setInterval(() => {
+                segundosRestantes--;
+                atualizarTimerVisual();
+                if (segundosRestantes <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }, 1000);
+        }
+
+        function atualizarTimerVisual() {
+            const minutos = Math.floor(segundosRestantes / 60);
+            const segundos = segundosRestantes % 60;
+            const timerElement = document.getElementById('timerSessao');
+            if (timerElement) {
+                timerElement.textContent = `⏱️ ${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+                // Muda a cor quando faltar 1 minuto
+                if (segundosRestantes < 60) {
+                    timerElement.style.color = '#e53e3e';
+                } else {
+                    timerElement.style.color = '#718096';
+                }
+            }
+        }
+
+        function verificarSessao() {
+            const usuario = sessionStorage.getItem('usuarioLogado');
+            const ultimaAtividade = sessionStorage.getItem('ultimaAtividade');
+
+            if (!usuario || !ultimaAtividade) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const tempoDecorrido = Date.now() - parseInt(ultimaAtividade);
+            if (tempoDecorrido >= SESSION_TIMEOUT) {
+                realizarLogout();
+                return;
+            }
+
+            // Calcula segundos restantes
+            const segundosRestantesCalc = Math.floor((SESSION_TIMEOUT - tempoDecorrido) / 1000);
+            segundosRestantes = segundosRestantesCalc > 0 ? segundosRestantesCalc : 0;
+            
+            // Exibe o nome do usuário
+            document.getElementById('nomeUsuario').textContent = usuario;
+            
+            // Atualiza o timer visual
+            atualizarTimerVisual();
+            
+            // Inicia o timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            timerInterval = setInterval(() => {
+                segundosRestantes--;
+                atualizarTimerVisual();
+                if (segundosRestantes <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }, 1000);
+
+            // Inicia o timer de logout
+            timeoutId = setTimeout(() => {
+                realizarLogout();
+            }, SESSION_TIMEOUT - tempoDecorrido);
+        }
+
+        function configurarDetectoresDeAtividade() {
+            const eventos = ['click', 'mousemove', 'keydown', 'scroll', 'touchstart', 'focus'];
+            eventos.forEach(evento => {
+                document.addEventListener(evento, atualizarAtividade);
+            });
+        }
+
+        function fazerLogout() {
+            if (confirm('Tem certeza que deseja sair do sistema?')) {
+                realizarLogout();
+            }
+        }
+
+        // ============================================================
+        // 2. FUNÇÕES DE BUSCA DE TELEFONE
         // ============================================================
         const CSV_URL =
             'https://docs.google.com/spreadsheets/d/e/2PACX-1vSA3HMbONAuTg2fEzW_6zPwZHKisEuEtXugR9NY8Yg3ehqNn2XckZZlRAV0EeCMv6-Y9QlEcD-l_7yg/pub?output=csv';
-        // 👆 Troque "SEU_GID_AQUI" pelo número do gid da aba "BANCO DE DADOS".
 
-        // Mapeamento das colunas (índices 0-based) conforme a aba:
-        // A=0 (Turma), B=1 (Nome), C=2 (Parent1), D=3 (DDD1), E=4 (Tel1),
-        // F=5 (vazio), G=6 (Parent2), H=7 (DDD2), I=8 (Tel2),
-        // J=9 (vazio), K=10 (Parent3), L=11 (DDD3), M=12 (Tel3),
-        // N=13 (vazio), O=14 (Parent4), P=15 (DDD4), Q=16 (Tel4)
         const COL_TURMA = 0;
         const COL_NOME = 1;
         const COL_PAR1 = 2;
@@ -284,7 +480,6 @@
 
         let dados = [];
 
-        // ========== FUNÇÕES AUXILIARES ==========
         function extrairNumeroPuro(tel) {
             if (!tel || tel.trim() === '' || tel === '—' || tel === '–') return null;
             const puro = tel.replace(/\D/g, '');
@@ -326,18 +521,15 @@
             return html;
         }
 
-        // Concatena DDD e telefone, formatando como (DDD) Telefone ou DDDTelefone
         function concatenarTelefone(ddd, telefone) {
             const d = (ddd || '').trim();
             const t = (telefone || '').trim();
             if (!d && !t) return '';
             if (!d) return t;
             if (!t) return d;
-            // Formato: (DDD) Telefone
             return `(${d}) ${t}`;
         }
 
-        // ========== CARREGAMENTO DOS DADOS ==========
         async function carregarDados() {
             const selectSerie = document.getElementById('serie');
             const divTelefones = document.getElementById('telefones');
@@ -384,7 +576,9 @@
             document.getElementById('aluno').disabled = true;
         }
 
-        // ========== EVENTOS ==========
+        // ============================================================
+        // 3. EVENTOS
+        // ============================================================
         document.getElementById('serie').addEventListener('change', function() {
             const turmaSelecionada = this.value;
             const selectAluno = document.getElementById('aluno');
@@ -438,39 +632,17 @@
                 return;
             }
 
-            // Monta lista com os 4 contatos, concatenando DDD + Telefone
             const contatos = [
-                {
-                    label: 'Telefone 1',
-                    parentesco: aluno[COL_PAR1],
-                    ddd: aluno[COL_DDD1],
-                    telefone: aluno[COL_TEL1]
-                },
-                {
-                    label: 'Telefone 2',
-                    parentesco: aluno[COL_PAR2],
-                    ddd: aluno[COL_DDD2],
-                    telefone: aluno[COL_TEL2]
-                },
-                {
-                    label: 'Telefone 3',
-                    parentesco: aluno[COL_PAR3],
-                    ddd: aluno[COL_DDD3],
-                    telefone: aluno[COL_TEL3]
-                },
-                {
-                    label: 'Telefone 4',
-                    parentesco: aluno[COL_PAR4],
-                    ddd: aluno[COL_DDD4],
-                    telefone: aluno[COL_TEL4]
-                }
+                { label: 'Telefone 1', parentesco: aluno[COL_PAR1], ddd: aluno[COL_DDD1], telefone: aluno[COL_TEL1] },
+                { label: 'Telefone 2', parentesco: aluno[COL_PAR2], ddd: aluno[COL_DDD2], telefone: aluno[COL_TEL2] },
+                { label: 'Telefone 3', parentesco: aluno[COL_PAR3], ddd: aluno[COL_DDD3], telefone: aluno[COL_TEL3] },
+                { label: 'Telefone 4', parentesco: aluno[COL_PAR4], ddd: aluno[COL_DDD4], telefone: aluno[COL_TEL4] }
             ];
 
             let html = `<div class="aluno-nome">👤 ${nomeAluno}</div>`;
             let temAlgumTelefone = false;
 
             contatos.forEach(info => {
-                // Concatena DDD e telefone para exibição e links
                 const numeroCompleto = concatenarTelefone(info.ddd, info.telefone);
                 const linksHtml = formatarLinks(numeroCompleto);
                 if (!linksHtml.includes('sem-telefone')) {
@@ -491,7 +663,14 @@
             divTel.classList.add('has-data');
         });
 
-        // ========== INICIALIZAÇÃO ==========
+        // ============================================================
+        // 4. INICIALIZAÇÃO
+        // ============================================================
+        // Verifica sessão e inicia controles
+        verificarSessao();
+        configurarDetectoresDeAtividade();
+
+        // Carrega os dados da planilha
         carregarDados();
 
         // Recarregar com Cmd/Ctrl + R (opcional)
