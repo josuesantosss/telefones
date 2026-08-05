@@ -95,6 +95,8 @@
             background: #4299e1;
             box-shadow: 0 4px 12px rgba(66, 153, 225, 0.25);
             width: 100%;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn:hover {
@@ -104,6 +106,29 @@
 
         .btn:active {
             transform: translateY(0);
+        }
+
+        /* Efeito de loading nos botões */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            right: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .btn-consultar {
@@ -127,12 +152,11 @@
         .btn-inserir {
             background: #9f7aea;
             box-shadow: 0 4px 12px rgba(159, 122, 234, 0.30);
-
         }
-        /*.btn-inserir:hover {
-            transform: none;
-            box-shadow: 0 4px 12px rgba(159, 122, 234, 0.30);
-        } */
+        .btn-inserir:hover {
+            background: #805ad5;
+            box-shadow: 0 8px 24px rgba(159, 122, 234, 0.40);
+        }
 
         .btn .icone {
             font-size: 24px;
@@ -171,6 +195,46 @@
             color: #718096;
         }
 
+        /* ---- LOADING GLOBAL ---- */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            flex-direction: column;
+            backdrop-filter: blur(4px);
+        }
+
+        #loading-overlay .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-top: 6px solid #4299e1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        #loading-overlay .message {
+            color: white;
+            margin-top: 25px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        #loading-overlay .sub-message {
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
         /* ---- RESPONSIVO ---- */
         @media (max-width: 480px) {
             .container {
@@ -193,10 +257,25 @@
                 font-size: 11px;
                 padding: 2px 10px;
             }
+            #loading-overlay .spinner {
+                width: 40px;
+                height: 40px;
+                border-width: 4px;
+            }
+            #loading-overlay .message {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="message" id="loading-message">Processando...</div>
+        <div class="sub-message" id="loading-submessage">Aguarde um momento</div>
+    </div>
 
     <div class="container">
 
@@ -214,26 +293,25 @@
         <div class="botoes">
 
             <!-- Consultar Contatos -->
-            <a href="consulta.html" class="btn btn-consultar">
+            <a href="consulta.html" class="btn btn-consultar" data-loading="Carregando consulta...">
                 <span class="icone">🔍</span>
                 <span class="label">Consultar Contatos</span>
                 <span class="badge">visualizar</span>
             </a>
 
             <!-- Editar Contatos -->
-            <a href="editarcontato.html" class="btn btn-editar">
+            <a href="editarcontato.html" class="btn btn-editar" data-loading="Carregando edição...">
                 <span class="icone">✏️</span>
                 <span class="label">Editar Contatos</span>
                 <span class="badge">alterar</span>
             </a>
 
-            <!-- Inserir Novo Contato (sem função) -->
-            <a href="novoaluno.html" class="btn btn-inserir">
+            <!-- Inserir Novo Contato -->
+            <a href="novoaluno.html" class="btn btn-inserir" data-loading="Preparando cadastro...">
                 <span class="icone">➕</span>
                 <span class="label">Inserir Novo Aluno</span>
                 <span class="badge">adicionar</span>
             </a>
-            </button>
 
         </div>
 
@@ -243,6 +321,82 @@
         </div>
 
     </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <!-- Primeiro carrega o sistema de sessão com loading -->
+    <script src="sessao.js"></script>
+    
+    <!-- Script específico para esta página -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ===== FUNÇÕES DE LOADING =====
+            function showLoading(message = 'Processando...', subMessage = 'Aguarde um momento') {
+                const overlay = document.getElementById('loading-overlay');
+                const msgElement = document.getElementById('loading-message');
+                const subMsgElement = document.getElementById('loading-submessage');
+                
+                if (msgElement) msgElement.textContent = message;
+                if (subMsgElement) subMsgElement.textContent = subMessage;
+                if (overlay) overlay.style.display = 'flex';
+            }
+
+            function hideLoading() {
+                const overlay = document.getElementById('loading-overlay');
+                if (overlay) overlay.style.display = 'none';
+            }
+
+            // ===== CONFIGURA BOTÕES =====
+            function configurarBotoes() {
+                const botoes = document.querySelectorAll('.btn[href]');
+                
+                botoes.forEach(botao => {
+                    botao.addEventListener('click', function(e) {
+                        const mensagem = this.dataset.loading || 'Carregando página...';
+                        
+                        // Mostra loading
+                        showLoading(mensagem, 'Redirecionando...');
+                        
+                        // Adiciona classe de loading no botão
+                        this.classList.add('loading');
+                        
+                        // Permite o redirecionamento normal
+                        // O loading será escondido quando a nova página carregar
+                    });
+                });
+            }
+
+            // ===== INICIALIZA =====
+            document.addEventListener('DOMContentLoaded', function() {
+                configurarBotoes();
+                
+                // Se houver parâmetro de timeout na URL, mostra mensagem
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('timeout') === '1') {
+                    // Mostra mensagem de sessão expirada (opcional)
+                    console.log('Sessão expirada');
+                }
+            });
+
+            // Expõe funções globalmente para uso em outras páginas
+            window.loading = {
+                show: showLoading,
+                hide: hideLoading
+            };
+
+            // Esconde loading quando a página carregar completamente
+            window.addEventListener('load', function() {
+                hideLoading();
+                
+                // Remove classe de loading de todos os botões
+                document.querySelectorAll('.btn.loading').forEach(btn => {
+                    btn.classList.remove('loading');
+                });
+            });
+
+        })();
+    </script>
 
 </body>
 </html>
