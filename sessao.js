@@ -141,10 +141,7 @@
                 timeoutId = null;
             }
 
-            hideLoading();
-            // Redireciona para o login com mensagem de timeout
-            window.location.href = 'login.html?timeout=1';
-        }, 500);
+
     }
 
     function resetarTimer() {
