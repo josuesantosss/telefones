@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inserir Novo Aluno - EMEF Cel. Aureliano Junqueira Franco</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            padding: 40px 35px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        /* ---- CABEÇALHO ---- */
+        .header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #9f7aea;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #1a365d;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 span {
+            font-size: 28px;
+        }
+
+        .header .sub {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* ---- FORMULÁRIO ---- */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e53e3e;
+            margin-left: 3px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #9f7aea;
+            box-shadow: 0 0 0 3px rgba(159, 122, 234, 0.1);
+            background: white;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* ---- BOTÕES ---- */
+        .botoes {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: #9f7aea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(159, 122, 234, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #805ad5;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(159, 122, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        /* ---- BARRA DE PROGRESSO ---- */
+        .progress-container {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-bar-wrapper {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #9f7aea, #805ad5);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .progress-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #9f7aea;
+        }
+
+        .progress-status .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #9f7aea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-status .check {
+            color: #48bb78;
+            font-size: 24px;
+            display: none;
+        }
+
+        .progress-status.completed .check {
+            display: block;
+        }
+
+        .progress-status.completed .spinner {
+            display: none;
+        }
+
+        /* ---- MENSAGENS ---- */
+        .message {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .message.success {
+            display: block;
+            background: #f0fff4;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+
+        .message.error {
+            display: block;
+            background: #fff5f5;
+            color: #9b2c2c;
+            border: 2px solid #fc8181;
+        }
+
+        /* ---- RESPONSIVO ---- */
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px 20px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .botoes {
+                flex-direction: column;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ===== CABEÇALHO ===== -->
+        <div class="header">
+            <h1>
+                <span>➕</span>
+                Inserir Novo Aluno
+            </h1>
+            <div class="sub">Preencha os dados para cadastrar um novo aluno na planilha</div>
+        </div>
+
+        <!-- ===== FORMULÁRIO ===== -->
+        <form id="formAluno">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome Completo <span class="required">*</span></label>
+                    <input type="text" id="nome" placeholder="Digite o nome completo" required />
+                </div>
+                <div class="form-group">
+                    <label>Data de Nascimento <span class="required">*</span></label>
+                    <input type="date" id="dataNascimento" required />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Turma <span class="required">*</span></label>
+                    <select id="turma" required>
+                        <option value="">Selecione a turma</option>
+                        <option value="1º Ano A">1º Ano A</option>
+                        <option value="1º Ano B">1º Ano B</option>
+                        <option value="2º Ano A">2º Ano A</option>
+                        <option value="2º Ano B">2º Ano B</option>
+                        <option value="3º Ano A">3º Ano A</option>
+                        <option value="3º Ano B">3º Ano B</option>
+                        <option value="4º Ano A">4º Ano A</option>
+                        <option value="4º Ano B">4º Ano B</option>
+                        <option value="5º Ano A">5º Ano A</option>
+                        <option value="5º Ano B">5º Ano B</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Número de Matrícula <span class="required">*</span></label>
+                    <input type="text" id="matricula" placeholder="Ex: 2026001" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Responsável <span class="required">*</span></label>
+                <input type="text" id="responsavel" placeholder="Nome do responsável" required />
+            </div>
+
+            <div class="form-group">
+                <label>Telefone para Contato <span class="required">*</span></label>
+                <input type="tel" id="telefone" placeholder="(00) 00000-0000" required />
+            </div>
+
+            <div class="form-group">
+                <label>Observações</label>
+                <textarea id="observacoes" placeholder="Informações adicionais (opcional)"></textarea>
+            </div>
+
+            <!-- ===== BOTÕES ===== -->
+            <div class="botoes">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">
+                    ↩️ Voltar
+                </button>
+                <button type="submit" class="btn btn-primary" id="btnSalvar">
+                    💾 Salvar Aluno
+                </button>
+            </div>
+        </form>
+
+        <!-- ===== BARRA DE PROGRESSO ===== -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-info">
+                <span id="progressLabel">Iniciando cadastro...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-status" id="progressStatus">
+                <div class="spinner"></div>
+                <span class="check">✅</span>
+                <span id="statusMessage">Preparando dados...</span>
+            </div>
+        </div>
+
+        <!-- ===== MENSAGENS ===== -->
+        <div class="message" id="message"></div>
+
+    </div>
+
+    <!-- ===== SCRIPT ===== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ===== ELEMENTOS =====
+            const form = document.getElementById('formAluno');
+            const btnSalvar = document.getElementById('btnSalvar');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressLabel = document.getElementById('progressLabel');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressStatus = document.getElementById('progressStatus');
+            const statusMessage = document.getElementById('statusMessage');
+            const messageDiv = document.getElementById('message');
+
+            // ===== FUNÇÃO PARA ATUALIZAR PROGRESSO =====
+            function atualizarProgresso(percentual, label, status) {
+                progressBar.style.width = percentual + '%';
+                progressPercent.textContent = percentual + '%';
+                progressLabel.textContent = label;
+                statusMessage.textContent = status;
+
+                // Se completou, mostra o check
+                if (percentual === 100) {
+                    progressStatus.classList.add('completed');
+                } else {
+                    progressStatus.classList.remove('completed');
+                }
+            }
+
+            // ===== FUNÇÃO PARA MOSTRAR MENSAGEM =====
+            function mostrarMensagem(texto, tipo = 'success') {
+                messageDiv.textContent = texto;
+                messageDiv.className = 'message ' + tipo;
+                
+                // Scroll para a mensagem
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // ===== FUNÇÃO PARA LIMPAR MENSAGEM =====
+            function limparMensagem() {
+                messageDiv.className = 'message';
+                messageDiv.textContent = '';
+            }
+
+            // ===== FUNÇÃO PARA SIMULAR ENVIO (SUBSTITUIR PELA INTEGRAÇÃO REAL) =====
+            function enviarParaPlanilha(dados) {
+                return new Promise((resolve, reject) => {
+                    // Simula o envio para a planilha com progresso
+                    let progresso = 0;
+                    
+                    // Etapa 1: Validando dados
+                    setTimeout(() => {
+                        progresso = 20;
+                        atualizarProgresso(progresso, 'Validando dados...', 'Verificando informações');
+                    }, 500);
+
+                    // Etapa 2: Conectando à planilha
+                    setTimeout(() => {
+                        progresso = 40;
+                        atualizarProgresso(progresso, 'Conectando à planilha...', 'Estabelecendo conexão');
+                    }, 1200);
+
+                    // Etapa 3: Enviando dados
+                    setTimeout(() => {
+                        progresso = 65;
+                        atualizarProgresso(progresso, 'Enviando dados...', 'Cadastrando aluno');
+                    }, 2000);
+
+                    // Etapa 4: Processando
+                    setTimeout(() => {
+                        progresso = 85;
+                        atualizarProgresso(progresso, 'Processando...', 'Salvando informações');
+                    }, 2800);
+
+                    // Etapa 5: Concluído
+                    setTimeout(() => {
+                        progresso = 100;
+                        atualizarProgresso(progresso, 'Concluído!', 'Aluno cadastrado com sucesso!');
+                        
+                        // Simula sucesso
+                        resolve({
+                            sucesso: true,
+                            mensagem: 'Aluno cadastrado com sucesso!',
+                            dados: dados
+                        });
+                    }, 3600);
+
+                    // Simula possível erro (descomente para testar)
+                    /*
+                    setTimeout(() => {
+                        reject(new Error('Erro ao conectar com a planilha'));
+                    }, 2000);
+                    */
+                });
+            }
+
+            // ===== FUNÇÃO REAL PARA ENVIAR PARA PLANILHA (DESCOMENTE QUANDO TIVER A API) =====
+            /*
+            async function enviarParaPlanilha(dados) {
+                try {
+                    const response = await fetch('URL_DA_SUA_API', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(dados)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Erro ao salvar na planilha');
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    throw error;
+                }
+            }
+            */
+
+            // ===== SUBMISSÃO DO FORMULÁRIO =====
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                limparMensagem();
+
+                // Coleta os dados
+                const dados = {
+                    nome: document.getElementById('nome').value.trim(),
+                    dataNascimento: document.getElementById('dataNascimento').value,
+                    turma: document.getElementById('turma').value,
+                    matricula: document.getElementById('matricula').value.trim(),
+                    responsavel: document.getElementById('responsavel').value.trim(),
+                    telefone: document.getElementById('telefone').value.trim(),
+                    observacoes: document.getElementById('observacoes').value.trim()
+                };
+
+                // Validação básica
+                for (let campo in dados) {
+                    if (campo !== 'observacoes' && !dados[campo]) {
+                        mostrarMensagem(`Por favor, preencha o campo ${campo.replace(/([A-Z])/g, ' $1').toLowerCase()}`, 'error');
+                        document.getElementById(campo).focus();
+                        return;
+                    }
+                }
+
+                // Desabilita botão
+                btnSalvar.disabled = true;
+                btnSalvar.innerHTML = '⏳ Salvando...';
+
+                // Mostra barra de progresso
+                progressContainer.classList.add('active');
+                atualizarProgresso(0, 'Iniciando...', 'Preparando cadastro');
+
+                try {
+                    // Envia para a planilha
+                    const resultado = await enviarParaPlanilha(dados);
+                    
+                    // Sucesso
+                    mostrarMensagem('✅ ' + resultado.mensagem, 'success');
+                    
+                    // Limpa o formulário após 2 segundos
+                    setTimeout(() => {
+                        form.reset();
+                        progressContainer.classList.remove('active');
+                        progressStatus.classList.remove('completed');
+                        progressBar.style.width = '0%';
+                        progressPercent.textContent = '0%';
+                    }, 3000);
+
+                } catch (error) {
+                    // Erro
+                    console.error('Erro ao cadastrar:', error);
+                    mostrarMensagem('❌ Erro ao cadastrar aluno: ' + error.message, 'error');
+                    
+                    // Mantém o progresso visível mas com erro
+                    atualizarProgresso(0, 'Erro!', 'Falha no cadastro');
+                    progressStatus.classList.remove('completed');
+                    
+                } finally {
+                    // Reativa o botão
+                    btnSalvar.disabled = false;
+                    btnSalvar.innerHTML = '💾 Salvar Aluno';
+                }
+            });
+
+            // ===== MÁSCARA PARA TELEFONE =====
+            document.getElementById('telefone').addEventListener('input', function(e) {
+                let valor = this.value.replace(/\D/g, '');
+                if (valor.length > 0) {
+                    valor = '(' + valor.substring(0, 2) + ') ' + valor.substring(2, 7) + '-' + valor.substring(7, 11);
+                }
+                this.value = valor;
+            });
+
+            // ===== VALIDAÇÃO EM TEMPO REAL =====
+            document.querySelectorAll('input[required], select[required]').forEach(campo => {
+                campo.addEventListener('blur', function() {
+                    if (!this.value.trim()) {
+                        this.style.borderColor = '#fc8181';
+                    } else {
+                        this.style.borderColor = '#e2e8f0';
+                    }
+                });
+                campo.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.style.borderColor = '#e2e8f0';
+                    }
+                });
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
